@@ -36,6 +36,7 @@ public class Pdf2Tiff {
             op.trim(); // trim transparent edges
             op.background("white");
             op.flatten();
+            op.compress("lzw");
             op.type("palette"); // reduce colour space to save file size
             op.addImage("tif:-"); // write to stdout in tif-format
 
