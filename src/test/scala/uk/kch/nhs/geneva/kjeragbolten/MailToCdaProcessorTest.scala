@@ -30,9 +30,10 @@ import javax.mail.Address
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.io.IOUtils
 import com.sun.mail.util.PropUtil
+import uk.kch.nhs.geneva.kjeragbolten.route.MailToCdaProcessor
+import uk.kch.nhs.geneva.kjeragbolten.route.CcdDocumentDataProcessor
 
-@Test
-class AppTest extends CamelTestSupport {
+class MailToCdaProcessorTest extends CamelTestSupport {
 
   override def createRouteBuilder() = new RouteBuilder() {
     override def configure() {
@@ -44,62 +45,13 @@ class AppTest extends CamelTestSupport {
         .process(new MailExchangeProcessor)
         .choice().when(header("to").contains(constant("elijah.charles@nhs.net")))
         .to("smtp:10.148.129.237:25")
+        .process(new MailToCdaProcessor)
+        .process(new CcdDocumentDataProcessor)
+        .toF("cxf://https://edt-hub.kch.nhs.uk/itk2/itk2adapter.asmx?serviceClass=%s",
+          "uk.kch.nhs.geneva.kjeragbolten.generated.services.itk.SendCDADocumentV20Ptt");
     }
   }
 
-  @Ignore
-  @Test
-  def sendSimpleBody() {
-    val sender = "epr.notifications@nhs.net"
-    val rcpt = "elijah.charles@nhs.net"
-    val cc = "epr.notifications@nhs.net"
-    val subject = "test"
-    val body = "Testmail";
-    val client = new SMTPClient();
-    val header = new SimpleSMTPHeader(sender, rcpt, subject)
-
-    header.addCC(cc)
-    header.addCC(cc)
-    client.connect("localhost", 25);
-    client.helo("localhost");
-    client.setSender(sender);
-    client.addRecipient(rcpt);
-
-    val writer = client.sendMessageData()
-    val headerText = header.toString()
-
-    writer.write(headerText)
-    writer.write(body)
-    writer.close()
-
-    client.quit();
-    client.disconnect();
-
-    assertTrue(true)
-
-  }
-
-  @Ignore
-  @Test
-  def sendAttachmentMessage() {
-
-    val smlMessage = IOUtils.toString(getClass.getClassLoader.getResourceAsStream("rfc-822-with-attachment-test.eml"))
-    val client = new SMTPClient();
-    client.connect("localhost", 25);
-    client.helo("localhost");
-    client.setSender("epr.notifications@nhs.net")
-    client.addRecipient("elijah.charles@nhs.net")
-    val writer = client.sendMessageData()
-    writer.write(smlMessage)
-    writer.close()
-
-    client.quit()
-    client.disconnect()
-
-    assertTrue(true)
-  }
-
-  @Ignore
   @Test
   def sendRenalWithAttachmentMessage() {
     val smlMessage = IOUtils.toString(getClass.getClassLoader.getResourceAsStream("Subject  Anaemia Clinic  from King's Renal Unit (KCH No V278328).eml"))
@@ -117,7 +69,4 @@ class AppTest extends CamelTestSupport {
 
     assertTrue(true)
   }
-
 }
-
-

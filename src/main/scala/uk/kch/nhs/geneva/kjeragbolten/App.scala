@@ -11,9 +11,9 @@ object App extends RouteBuilderSupport {
 
   def main(args: Array[String]) {
 
-    val props = System.getProperties()
+    /*val props = System.getProperties()
     props.setProperty("mail.mime.multipart.ignoremissingboundaryparameter", "true")
-    props.setProperty("mail.mime.multipart.allowempty", "true")
+    props.setProperty("mail.mime.multipart.allowempty", "true")*/
     val main = new Main
     val mteRouteBuilder = new MtaRouteBuilder
 

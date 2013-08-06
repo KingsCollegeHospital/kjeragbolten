@@ -59,15 +59,11 @@ class MailExchangeProcessor extends Processor {
       if (mimeMessageParser.hasPlainContent()) {
         in.setHeader(MailConstants.MAIL_ALTERNATIVE_BODY, mimeMessageParser.getPlainContent)
         in.setBody(mimeMessageParser.getPlainContent)
-        /*val plainPart = new MimeBodyPart()
-        plainPart.setText(mimeMessageParser.getPlainContent)
-        mixed.addBodyPart(plainPart)*/
+
       }
       if (mimeMessageParser.hasHtmlContent) {
         in.setBody(mimeMessageParser.hasHtmlContent)
-        /*val htmlPart = new MimeBodyPart();
-        htmlPart.setText(mimeMessageParser.getHtmlContent())
-        mixed.addBodyPart(htmlPart)*/
+
       }
 
     } else {
@@ -78,21 +74,6 @@ class MailExchangeProcessor extends Processor {
     }
 
     mimeMessageParser.getAttachmentList().foreach(f => in.addAttachment(f.getName(), new DataHandler(f)))
-
-    /*mimeMessage match {
-      case multipart: MimeMultipart => {
-        for (i <- 0 to multipart.getCount) {
-          val part = multipart.getBodyPart(i)
-          in.addAttachment(part.getFileName, part.getDataHandler)
-        }
-      }
-      case _ => {
-
-
-      }
-
-    }*/
-
   }
 
 }
