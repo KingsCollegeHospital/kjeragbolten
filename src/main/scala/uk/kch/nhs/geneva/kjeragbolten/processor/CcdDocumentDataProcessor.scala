@@ -56,7 +56,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import uk.kch.nhs.geneva.kjeragbolten.CcdDocumentData;
-import uk.kch.nhs.geneva.kjeragbolten.util.CdaBuilderFactory2;
+import static uk.kch.nhs.geneva.kjeragbolten.util.CdaBuilderFactory;
 import uk.kch.nhs.geneva.kjeragbolten.util.Pdf2Tiff;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.AddressListType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.AddressType;
@@ -131,10 +131,10 @@ public class CcdDocumentDataProcessor implements Processor {
 
 		String effectiveTimeValue = data.getEffectiveTimeValue();
 
-		TS authorDocumentEffectiveDate = CdaBuilderFactory2
+		TS authorDocumentEffectiveDate = CdaBuilderFactory
 				.createTs(effectiveTimeValue);
 		// Healthtools don't allow same node to exist in 2 places
-		TS documentEffectiveDate = CdaBuilderFactory2
+		TS documentEffectiveDate = CdaBuilderFactory
 				.createTs(effectiveTimeValue);
 
 		String authorGiven = data.getAuthorGiven();
@@ -159,13 +159,13 @@ public class CcdDocumentDataProcessor implements Processor {
 		Component2 component = createComponent(mediaType, attachment);
 
 		String title = data.getTitle();
-		ST documentTitle = CdaBuilderFactory2.createSt(title);
+		ST documentTitle = CdaBuilderFactory.createSt(title);
 
 		String root = data.getRoot();
 		String extension = data.getExtension();
-		II docId = CdaBuilderFactory2.createIi(root, extension);
+		II docId = CdaBuilderFactory.createIi(root, extension);
 
-		ContinuityOfCareDocument ccdDocument = CdaBuilderFactory2
+		ContinuityOfCareDocument ccdDocument = CdaBuilderFactory
 				.createContinuityOfCareDocument(documentTitle,
 						documentEffectiveDate, author, recipient, custodian,
 						docId, patientRole);
@@ -179,63 +179,63 @@ public class CcdDocumentDataProcessor implements Processor {
 		String base64 = new String(Base64.encodeBase64(IOUtils
 				.toByteArray(inputStream)));
 
-		ED nonXmlData = CdaBuilderFactory2.createCustodian(mediaType,
+		ED nonXmlData = CdaBuilderFactory.createCustodian(mediaType,
 				BinaryDataEncoding.B64, base64);
 
-		NonXMLBody nonXMLBody = CdaBuilderFactory2.createNonXmlBody(nonXmlData);
+		NonXMLBody nonXMLBody = CdaBuilderFactory.createNonXmlBody(nonXmlData);
 
 		// return document as string
 
-		return CdaBuilderFactory2.createComponent2(nonXMLBody);
+		return CdaBuilderFactory.createComponent2(nonXMLBody);
 	}
 
 	public Custodian createCustodian(String organisationName,
 			String infrastructureRootId) {
-		ON custOrgName = CdaBuilderFactory2.createOn(organisationName);
+		ON custOrgName = CdaBuilderFactory.createOn(organisationName);
 
-		InfrastructureRootTypeId rootId = CdaBuilderFactory2
+		InfrastructureRootTypeId rootId = CdaBuilderFactory
 				.createInfrastructureRootTypeId(infrastructureRootId);
 
-		CustodianOrganization custOrg = CdaBuilderFactory2
+		CustodianOrganization custOrg = CdaBuilderFactory
 				.createCustodianOrganization(custOrgName, rootId);
 
-		AssignedCustodian assignedCustodian = CdaBuilderFactory2
+		AssignedCustodian assignedCustodian = CdaBuilderFactory
 				.createAssignedCustodian(custOrg);
 
-		Custodian custodian = CdaBuilderFactory2
+		Custodian custodian = CdaBuilderFactory
 				.createCustodian(assignedCustodian);
 		return custodian;
 	}
 
 	public InformationRecipient createRecipient(String recipientFamily,
 			String recipientGiven, String receivedOrgainisationName) {
-		Person intendedPerson = CdaBuilderFactory2.createPerson();
+		Person intendedPerson = CdaBuilderFactory.createPerson();
 
-		PN intendedPersonName = CdaBuilderFactory2.createPn(recipientGiven,
+		PN intendedPersonName = CdaBuilderFactory.createPn(recipientGiven,
 				recipientFamily);
 
-		ON orgName = CdaBuilderFactory2.createOn(receivedOrgainisationName);
+		ON orgName = CdaBuilderFactory.createOn(receivedOrgainisationName);
 
-		Organization org = CdaBuilderFactory2.createOrganization();
+		Organization org = CdaBuilderFactory.createOrganization();
 
-		IntendedRecipient intendedRecipient = CdaBuilderFactory2
+		IntendedRecipient intendedRecipient = CdaBuilderFactory
 				.createIntendedRecipient(intendedPerson, org,
 						intendedPersonName, orgName);
 
-		InformationRecipient recipient = CdaBuilderFactory2
+		InformationRecipient recipient = CdaBuilderFactory
 				.createInformationRecipient(intendedRecipient);
 		return recipient;
 	}
 
 	public Author createAuthor(String authorGiven, String authorFamily,
 			TS documentEffectiveDate) {
-		Person authorPerson = CdaBuilderFactory2.createPerson();
-		AssignedAuthor assignedAuthor = CdaBuilderFactory2
+		Person authorPerson = CdaBuilderFactory.createPerson();
+		AssignedAuthor assignedAuthor = CdaBuilderFactory
 				.createAssignedAuthor(authorPerson);
 
-		PN authorName = CdaBuilderFactory2.createPn(authorGiven, authorFamily);
+		PN authorName = CdaBuilderFactory.createPn(authorGiven, authorFamily);
 
-		Author author = CdaBuilderFactory2.createAuthor(documentEffectiveDate,
+		Author author = CdaBuilderFactory.createAuthor(documentEffectiveDate,
 				assignedAuthor, authorName);
 		return author;
 	}
@@ -244,22 +244,22 @@ public class CcdDocumentDataProcessor implements Processor {
 			String patientRoleId, String patientGiven, String patientFamily,
 			String patientGenderCode, String patientGenderCodeSystem,
 			String patientBirthdate) {
-		II id = CdaBuilderFactory2.createIi(patientRoleIdRoot, patientRoleId);
+		II id = CdaBuilderFactory.createIi(patientRoleIdRoot, patientRoleId);
 
 		// create a patient object and add it to patient role
 
-		PN patientName = CdaBuilderFactory2
+		PN patientName = CdaBuilderFactory
 				.createPn(patientGiven, patientFamily);
 
-		CE patientGender = CdaBuilderFactory2.createCe(patientGenderCode,
+		CE patientGender = CdaBuilderFactory.createCe(patientGenderCode,
 				patientGenderCodeSystem);
 
-		TS patientDateOfBirth = CdaBuilderFactory2.createTs(patientBirthdate);
+		TS patientDateOfBirth = CdaBuilderFactory.createTs(patientBirthdate);
 
-		Patient patient = CdaBuilderFactory2.createPatient(patientName,
+		Patient patient = CdaBuilderFactory.createPatient(patientName,
 				patientGender, patientDateOfBirth);
 
-		PatientRole patientRole = CdaBuilderFactory2.createPatientRole(id,
+		PatientRole patientRole = CdaBuilderFactory.createPatientRole(id,
 				patient);
 
 		return patientRole;
