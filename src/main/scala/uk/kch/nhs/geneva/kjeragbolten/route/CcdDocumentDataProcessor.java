@@ -1,16 +1,18 @@
 package uk.kch.nhs.geneva.kjeragbolten.route;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+
 import java.math.BigInteger;
+
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.UUID;
-import java.util.Map.Entry;
-import java.io.InputStream;
 
 import javax.activation.DataHandler;
-import javax.activation.DataSource;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,8 +20,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+
 import org.openhealthtools.mdht.uml.cda.AssignedAuthor;
 import org.openhealthtools.mdht.uml.cda.AssignedCustodian;
 import org.openhealthtools.mdht.uml.cda.Author;
@@ -44,7 +48,9 @@ import org.openhealthtools.mdht.uml.hl7.datatypes.ON;
 import org.openhealthtools.mdht.uml.hl7.datatypes.PN;
 import org.openhealthtools.mdht.uml.hl7.datatypes.ST;
 import org.openhealthtools.mdht.uml.hl7.datatypes.TS;
+
 import org.w3c.dom.Document;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -62,8 +68,6 @@ import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.ManifestType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.PayloadType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.PayloadsType;
 
-import uk.kch.nhs.geneva.kjeragbolten.route.Pdf2Tiff;
-
 public class CcdDocumentDataProcessor implements Processor {
 
 	@Override
@@ -75,9 +79,11 @@ public class CcdDocumentDataProcessor implements Processor {
 		for (Entry<String, DataHandler> attachment : in.getAttachments()
 				.entrySet()) {
 
-			InputStream inputAttachment = attachment.getValue().getDataSource().getInputStream();
-			
-			InputStream outputAttachment = Pdf2Tiff.convertPdf2Tiff(inputAttachment);
+			InputStream inputAttachment = attachment.getValue().getDataSource()
+					.getInputStream();
+
+			InputStream outputAttachment = Pdf2Tiff
+					.convertPdf2Tiff(inputAttachment);
 			ContinuityOfCareDocument continuityOfCareDocument = this
 					.generateContinuityOfCareDocument(ccdDocumentData,
 							outputAttachment);
@@ -98,7 +104,6 @@ public class CcdDocumentDataProcessor implements Processor {
 			break;
 		}
 	}
-
 
 	private String renderContinuityOfCareDocument(
 			ContinuityOfCareDocument continuityOfCareDocument) throws Exception {
@@ -154,42 +159,30 @@ public class CcdDocumentDataProcessor implements Processor {
 
 		String root = data.getRoot();
 		String extension = data.getExtension();
-		ContinuityOfCareDocument ccdDocument = createContinuityOfCareDocument(
-				patientRole, documentTitle, documentEffectiveDate, author,
-				recipient, custodian, component, root, extension);
-
-		return ccdDocument;
-	}
-
-	public ContinuityOfCareDocument createContinuityOfCareDocument(
-			PatientRole patientRole, ST documentTitle,
-			TS documentEffectiveDate, Author author,
-			InformationRecipient recipient, Custodian custodian,
-			Component2 component, String root, String extension) {
 		II docId = CdaBuilderFactory.createIi(root, extension);
+
 		ContinuityOfCareDocument ccdDocument = CdaBuilderFactory
 				.createContinuityOfCareDocument(documentTitle,
 						documentEffectiveDate, author, recipient, custodian,
-						component, docId, patientRole);
+						docId, patientRole);
+		ccdDocument.setComponent(component);
+
 		return ccdDocument;
 	}
 
 	public Component2 createComponent(String mediaType, InputStream inputStream)
 			throws IOException {
-		BinaryDataEncoding coding = BinaryDataEncoding.B64;
+		String base64 = new String(Base64.encodeBase64(IOUtils
+				.toByteArray(inputStream)));
 
-		byte[] bytes = IOUtils.toByteArray(inputStream);
-		String base64 = new String(Base64.encodeBase64(bytes));
-
-		ED nonXmlData = CdaBuilderFactory.createCustodian(mediaType, coding,
-				base64);
+		ED nonXmlData = CdaBuilderFactory.createCustodian(mediaType,
+				BinaryDataEncoding.B64, base64);
 
 		NonXMLBody nonXMLBody = CdaBuilderFactory.createNonXmlBody(nonXmlData);
 
 		// return document as string
 
-		Component2 component = CdaBuilderFactory.createComponent2(nonXMLBody);
-		return component;
+		return CdaBuilderFactory.createComponent2(nonXMLBody);
 	}
 
 	public Custodian createCustodian(String organisationName,
@@ -270,7 +263,8 @@ public class CcdDocumentDataProcessor implements Processor {
 
 	public DistributionEnvelopeType createPrimaryCDADistributionEnvelope(
 			String payload, String desination, String senderAddress,
-			String auditIdentity) throws SAXException, IOException, ParserConfigurationException {
+			String auditIdentity) throws SAXException, IOException,
+			ParserConfigurationException {
 		HandlingType handling = new HandlingType();
 		HandlingSpecType spec1 = new HandlingSpecType();
 		spec1.setKey("urn:nhs-itk:ns:201005:ackrequested");
@@ -289,7 +283,8 @@ public class CcdDocumentDataProcessor implements Processor {
 
 	public static DistributionEnvelopeType createCopyCDADistributionEnvelope(
 			String payload, String destination, String senderAddress,
-			String auditIdentity) throws SAXException, IOException, ParserConfigurationException {
+			String auditIdentity) throws SAXException, IOException,
+			ParserConfigurationException {
 		HandlingType handling = new HandlingType();
 		HandlingSpecType spec1 = new HandlingSpecType();
 		spec1.setKey("urn:nhs-itk:ns:201005:ackrequested");
@@ -308,7 +303,8 @@ public class CcdDocumentDataProcessor implements Processor {
 
 	public static DistributionEnvelopeType createInfrastructureAckDistributionEnvelope(
 			String payload, String destination, String senderAddress,
-			String auditIdentity) throws SAXException, IOException, ParserConfigurationException {
+			String auditIdentity) throws SAXException, IOException,
+			ParserConfigurationException {
 		HandlingType handling = new HandlingType();
 		HandlingSpecType spec = new HandlingSpecType();
 		spec.setKey("urn:nhs-itk:ns:201005:interaction");
@@ -321,9 +317,12 @@ public class CcdDocumentDataProcessor implements Processor {
 	}
 
 	private static DistributionEnvelopeType createDistributionEnvelope(
-			String profileID, String service, uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.HandlingType handlingType,
+			String profileID,
+			String service,
+			uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.HandlingType handlingType,
 			String destination, String stringPayload, String senderAddress,
-			String auditIdentity) throws SAXException, IOException, ParserConfigurationException {
+			String auditIdentity) throws SAXException, IOException,
+			ParserConfigurationException {
 
 		String headerUuid = UUID.randomUUID().toString().toUpperCase();
 		Random r = new Random();
@@ -368,23 +367,22 @@ public class CcdDocumentDataProcessor implements Processor {
 
 		// build xml data from string and insert into payload
 
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
-			factory.setNamespaceAware(true);
-			DocumentBuilder docBuilder = factory.newDocumentBuilder();
-			Document doc = docBuilder.parse(new InputSource(new StringReader(
-					stringPayload)));
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder docBuilder = factory.newDocumentBuilder();
+		Document doc = docBuilder.parse(new InputSource(new StringReader(
+				stringPayload)));
 
-			PayloadType payload = new PayloadType();
-			payload.setId(payloadId);
-			payload.getContent().add(doc.getDocumentElement());
+		PayloadType payload = new PayloadType();
+		payload.setId(payloadId);
+		payload.getContent().add(doc.getDocumentElement());
 
-			PayloadsType payloads = new PayloadsType();
-			payloads.setCount(BigInteger.ONE);
-			payloads.getPayload().add(payload);
-			d.setPayloads(payloads);
+		PayloadsType payloads = new PayloadsType();
+		payloads.setCount(BigInteger.ONE);
+		payloads.getPayload().add(payload);
+		d.setPayloads(payloads);
 
-			return d;
+		return d;
 
 	}
 }

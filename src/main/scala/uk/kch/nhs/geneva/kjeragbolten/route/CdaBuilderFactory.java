@@ -39,7 +39,7 @@ public class CdaBuilderFactory {
 	public static ContinuityOfCareDocument createContinuityOfCareDocument(
 			ST title, TS effectiveTime, Author author,
 			InformationRecipient informationRecipient, Custodian custodian,
-			Component2 component2, II id, PatientRole patientRole) {
+			II id, PatientRole patientRole) {
 		ContinuityOfCareDocument ccdDocument = CCDFactory.eINSTANCE
 				.createContinuityOfCareDocument().init();
 		ccdDocument.setTitle(title);
@@ -48,7 +48,6 @@ public class CdaBuilderFactory {
 		ccdDocument.getAuthors().add(author);
 		ccdDocument.getInformationRecipients().add(informationRecipient);
 		ccdDocument.setCustodian(custodian);
-		ccdDocument.setComponent(component2);
 		ccdDocument.addPatientRole(patientRole);
 		return ccdDocument;
 	}

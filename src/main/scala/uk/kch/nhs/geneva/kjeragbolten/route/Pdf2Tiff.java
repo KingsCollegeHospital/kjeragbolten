@@ -15,54 +15,56 @@ import java.io.InputStream;
 
 public class Pdf2Tiff {
 
-    private static Logger logger = LoggerFactory.getLogger(Pdf2Tiff.class);
+	private static Logger logger = LoggerFactory.getLogger(Pdf2Tiff.class);
 
-    /**
-     * @param pdfFile
-     * @return
-     * @throws IOException 
-     * @throws IM4JavaException 
-     * @throws InterruptedException 
-     * @throws Exception - Note: It is expected that the next level will fail when trying to convert
-     *                   It could be that the convert function is missing and an empty tiff file is produced.
-     */
-    public static InputStream convertPdf2Tiff(InputStream fis) throws IOException, InterruptedException, IM4JavaException {
+	/**
+	 * @param pdfFile
+	 * @return
+	 * @throws IOException
+	 * @throws IM4JavaException
+	 * @throws InterruptedException
+	 * @throws Exception
+	 *             - Note: It is expected that the next level will fail when
+	 *             trying to convert It could be that the convert function is
+	 *             missing and an empty tiff file is produced.
+	 */
+	public static InputStream convertPdf2Tiff(InputStream fis)
+			throws IOException, InterruptedException, IM4JavaException {
 
-            File tiffFile = File.createTempFile("output", ".tiff");
-            logger.info("Generating tiff file:" + tiffFile.getPath());
+		File tiffFile = File.createTempFile("output", ".tiff");
+		logger.info("Generating tiff file:" + tiffFile.getPath());
 
-            IMOperation op = new IMOperation();
-            op.addImage("-"); // read from stdin
-            op.trim(); // trim transparent edges
-            op.background("white");
-            op.flatten();
-            op.compress("lzw");
-            op.type("palette"); // reduce colour space to save file size
-            op.addImage("tif:-"); // write to stdout in tif-format
+		IMOperation op = new IMOperation();
+		op.addImage("-"); // read from stdin
+		op.trim(); // trim transparent edges
+		op.background("white"); // some viewers have a default white background
+		op.flatten(); // flatten layers
+		op.compress("lzw"); // compress
+		op.type("palette"); // reduce colour space to save file size
+		op.addImage("tif:-"); // write to stdout in tif-format
 
-            logger.info("Creating I/O streams..");
+		logger.info("Creating I/O streams..");
 
-            //FileInputStream fis = new FileInputStream(pdfFile);
-            FileOutputStream fos = new FileOutputStream(tiffFile);
-            Pipe pipeIn = new Pipe(fis, null);
-            Pipe pipeOut = new Pipe(null, fos);
+		FileOutputStream fos = new FileOutputStream(tiffFile);
+		Pipe pipeIn = new Pipe(fis, null);
+		Pipe pipeOut = new Pipe(null, fos);
 
-            logger.info("Preparing conversion..");
+		logger.info("Preparing conversion..");
 
-            // set up command and run
-            ConvertCmd convert = new ConvertCmd();
-            convert.setInputProvider(pipeIn);
-            convert.setOutputConsumer(pipeOut);
-            convert.run(op);
+		// set up command and run
+		ConvertCmd convert = new ConvertCmd();
+		convert.setInputProvider(pipeIn);
+		convert.setOutputConsumer(pipeOut);
+		convert.run(op);
 
-            logger.info("Cleaning up..");
+		logger.info("Cleaning up..");
 
-            //clean up
-            fis.close();
-            fos.close();
+		// clean up
+		fis.close();
+		fos.close();
 
-            logger.info("Tiff construction completed");
+		logger.info("Tiff construction completed");
 
-            return new FileInputStream(tiffFile);
-    }
+		return new FileInputStream(tiffFile);
+	}
 }
