@@ -2,6 +2,8 @@ package uk.kch.nhs.geneva.kjeragbolten.route
 
 import org.apache.camel.Exchange
 import org.apache.camel.builder.RouteBuilder
+import uk.kch.nhs.geneva.kjeragbolten.processor.CcdDocumentDataProcessor
+import uk.kch.nhs.geneva.kjeragbolten.processor.MailToCdaProcessor
 
 class MtaRouteBuilder extends RouteBuilder {
 

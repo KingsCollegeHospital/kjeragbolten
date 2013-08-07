@@ -1,4 +1,4 @@
-package uk.kch.nhs.geneva.kjeragbolten.route
+package uk.kch.nhs.geneva.kjeragbolten.processor
 
 import org.apache.camel.Processor
 import org.apache.camel.Exchange
@@ -63,11 +63,11 @@ class MailToCdaProcessor extends Processor {
     default.setPatientGiven(cleaned(2))
     default.setPatientRoleId(cleaned(4))
     val dateofBirth = cleaned(5)
-    if(dateofBirth.indexOf("-") > -1)
-    default.setPatientBirthdate(convetRfc1123DtmToHl7(dateofBirth))
+    if (dateofBirth.indexOf("-") > -1)
+      default.setPatientBirthdate(convetRfc1123DtmToHl7(dateofBirth))
     else
       default.setPatientBirthdate(convetRfc1123DtmToHl72(dateofBirth))
-    
+
     default.setOrganisationName(cleaned(6))
     default.setTitle(cleaned(9))
     val effectiveValue = cleaned(12)

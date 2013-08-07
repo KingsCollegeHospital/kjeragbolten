@@ -30,8 +30,8 @@ import javax.mail.Address
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.io.IOUtils
 import com.sun.mail.util.PropUtil
-import uk.kch.nhs.geneva.kjeragbolten.route.MailToCdaProcessor
-import uk.kch.nhs.geneva.kjeragbolten.route.CcdDocumentDataProcessor
+import uk.kch.nhs.geneva.kjeragbolten.processor.MailToCdaProcessor
+import uk.kch.nhs.geneva.kjeragbolten.processor.CcdDocumentDataProcessor
 
 class MailToCdaProcessorTest extends CamelTestSupport {
 

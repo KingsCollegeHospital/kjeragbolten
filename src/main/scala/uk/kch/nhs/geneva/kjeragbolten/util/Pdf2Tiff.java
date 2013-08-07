@@ -1,4 +1,4 @@
-package uk.kch.nhs.geneva.kjeragbolten.route;
+package uk.kch.nhs.geneva.kjeragbolten.util;
 
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;

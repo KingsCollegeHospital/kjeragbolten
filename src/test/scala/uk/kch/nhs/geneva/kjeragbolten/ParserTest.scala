@@ -30,7 +30,7 @@ import javax.mail.Address
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.io.IOUtils
 import com.sun.mail.util.PropUtil
-import uk.kch.nhs.geneva.kjeragbolten.route.MailToCdaProcessor
+import uk.kch.nhs.geneva.kjeragbolten.processor.MailToCdaProcessor
 
 class ParserTest extends CamelTestSupport {
   val identValue = "<IDENT>G85001|Cather|Peter|D446358|4961016322|24-Jul-1924|KINGS COLLEGE HOSPITAL|||A&E GP Letter|986867886||05/08/2013 00:09:05|G8630894||</IDENT>"

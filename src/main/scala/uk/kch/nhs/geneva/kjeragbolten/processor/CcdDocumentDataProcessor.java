@@ -1,4 +1,4 @@
-package uk.kch.nhs.geneva.kjeragbolten.route;
+package uk.kch.nhs.geneva.kjeragbolten.processor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +9,7 @@ import java.math.BigInteger;
 
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.activation.DataHandler;
@@ -55,6 +56,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import uk.kch.nhs.geneva.kjeragbolten.CcdDocumentData;
+import uk.kch.nhs.geneva.kjeragbolten.util.CdaBuilderFactory2;
+import uk.kch.nhs.geneva.kjeragbolten.util.Pdf2Tiff;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.AddressListType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.AddressType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.AuditIdentityType;
@@ -75,9 +78,10 @@ public class CcdDocumentDataProcessor implements Processor {
 		// CDABuilder builder = new CDABuilder();
 		Message in = exchange.getIn();
 		CcdDocumentData ccdDocumentData = in.getBody(CcdDocumentData.class);
+		Set<Entry<String, DataHandler>> attachments = in.getAttachments()
+				.entrySet();
 
-		for (Entry<String, DataHandler> attachment : in.getAttachments()
-				.entrySet()) {
+		for (Entry<String, DataHandler> attachment : attachments) {
 
 			InputStream inputAttachment = attachment.getValue().getDataSource()
 					.getInputStream();
@@ -127,10 +131,10 @@ public class CcdDocumentDataProcessor implements Processor {
 
 		String effectiveTimeValue = data.getEffectiveTimeValue();
 
-		TS authorDocumentEffectiveDate = CdaBuilderFactory
+		TS authorDocumentEffectiveDate = CdaBuilderFactory2
 				.createTs(effectiveTimeValue);
 		// Healthtools don't allow same node to exist in 2 places
-		TS documentEffectiveDate = CdaBuilderFactory
+		TS documentEffectiveDate = CdaBuilderFactory2
 				.createTs(effectiveTimeValue);
 
 		String authorGiven = data.getAuthorGiven();
@@ -155,13 +159,13 @@ public class CcdDocumentDataProcessor implements Processor {
 		Component2 component = createComponent(mediaType, attachment);
 
 		String title = data.getTitle();
-		ST documentTitle = CdaBuilderFactory.createSt(title);
+		ST documentTitle = CdaBuilderFactory2.createSt(title);
 
 		String root = data.getRoot();
 		String extension = data.getExtension();
-		II docId = CdaBuilderFactory.createIi(root, extension);
+		II docId = CdaBuilderFactory2.createIi(root, extension);
 
-		ContinuityOfCareDocument ccdDocument = CdaBuilderFactory
+		ContinuityOfCareDocument ccdDocument = CdaBuilderFactory2
 				.createContinuityOfCareDocument(documentTitle,
 						documentEffectiveDate, author, recipient, custodian,
 						docId, patientRole);
@@ -175,63 +179,63 @@ public class CcdDocumentDataProcessor implements Processor {
 		String base64 = new String(Base64.encodeBase64(IOUtils
 				.toByteArray(inputStream)));
 
-		ED nonXmlData = CdaBuilderFactory.createCustodian(mediaType,
+		ED nonXmlData = CdaBuilderFactory2.createCustodian(mediaType,
 				BinaryDataEncoding.B64, base64);
 
-		NonXMLBody nonXMLBody = CdaBuilderFactory.createNonXmlBody(nonXmlData);
+		NonXMLBody nonXMLBody = CdaBuilderFactory2.createNonXmlBody(nonXmlData);
 
 		// return document as string
 
-		return CdaBuilderFactory.createComponent2(nonXMLBody);
+		return CdaBuilderFactory2.createComponent2(nonXMLBody);
 	}
 
 	public Custodian createCustodian(String organisationName,
 			String infrastructureRootId) {
-		ON custOrgName = CdaBuilderFactory.createOn(organisationName);
+		ON custOrgName = CdaBuilderFactory2.createOn(organisationName);
 
-		InfrastructureRootTypeId rootId = CdaBuilderFactory
+		InfrastructureRootTypeId rootId = CdaBuilderFactory2
 				.createInfrastructureRootTypeId(infrastructureRootId);
 
-		CustodianOrganization custOrg = CdaBuilderFactory
+		CustodianOrganization custOrg = CdaBuilderFactory2
 				.createCustodianOrganization(custOrgName, rootId);
 
-		AssignedCustodian assignedCustodian = CdaBuilderFactory
+		AssignedCustodian assignedCustodian = CdaBuilderFactory2
 				.createAssignedCustodian(custOrg);
 
-		Custodian custodian = CdaBuilderFactory
+		Custodian custodian = CdaBuilderFactory2
 				.createCustodian(assignedCustodian);
 		return custodian;
 	}
 
 	public InformationRecipient createRecipient(String recipientFamily,
 			String recipientGiven, String receivedOrgainisationName) {
-		Person intendedPerson = CdaBuilderFactory.createPerson();
+		Person intendedPerson = CdaBuilderFactory2.createPerson();
 
-		PN intendedPersonName = CdaBuilderFactory.createPn(recipientGiven,
+		PN intendedPersonName = CdaBuilderFactory2.createPn(recipientGiven,
 				recipientFamily);
 
-		ON orgName = CdaBuilderFactory.createOn(receivedOrgainisationName);
+		ON orgName = CdaBuilderFactory2.createOn(receivedOrgainisationName);
 
-		Organization org = CdaBuilderFactory.createOrganization();
+		Organization org = CdaBuilderFactory2.createOrganization();
 
-		IntendedRecipient intendedRecipient = CdaBuilderFactory
+		IntendedRecipient intendedRecipient = CdaBuilderFactory2
 				.createIntendedRecipient(intendedPerson, org,
 						intendedPersonName, orgName);
 
-		InformationRecipient recipient = CdaBuilderFactory
+		InformationRecipient recipient = CdaBuilderFactory2
 				.createInformationRecipient(intendedRecipient);
 		return recipient;
 	}
 
 	public Author createAuthor(String authorGiven, String authorFamily,
 			TS documentEffectiveDate) {
-		Person authorPerson = CdaBuilderFactory.createPerson();
-		AssignedAuthor assignedAuthor = CdaBuilderFactory
+		Person authorPerson = CdaBuilderFactory2.createPerson();
+		AssignedAuthor assignedAuthor = CdaBuilderFactory2
 				.createAssignedAuthor(authorPerson);
 
-		PN authorName = CdaBuilderFactory.createPn(authorGiven, authorFamily);
+		PN authorName = CdaBuilderFactory2.createPn(authorGiven, authorFamily);
 
-		Author author = CdaBuilderFactory.createAuthor(documentEffectiveDate,
+		Author author = CdaBuilderFactory2.createAuthor(documentEffectiveDate,
 				assignedAuthor, authorName);
 		return author;
 	}
@@ -240,22 +244,22 @@ public class CcdDocumentDataProcessor implements Processor {
 			String patientRoleId, String patientGiven, String patientFamily,
 			String patientGenderCode, String patientGenderCodeSystem,
 			String patientBirthdate) {
-		II id = CdaBuilderFactory.createIi(patientRoleIdRoot, patientRoleId);
+		II id = CdaBuilderFactory2.createIi(patientRoleIdRoot, patientRoleId);
 
 		// create a patient object and add it to patient role
 
-		PN patientName = CdaBuilderFactory
+		PN patientName = CdaBuilderFactory2
 				.createPn(patientGiven, patientFamily);
 
-		CE patientGender = CdaBuilderFactory.createCe(patientGenderCode,
+		CE patientGender = CdaBuilderFactory2.createCe(patientGenderCode,
 				patientGenderCodeSystem);
 
-		TS patientDateOfBirth = CdaBuilderFactory.createTs(patientBirthdate);
+		TS patientDateOfBirth = CdaBuilderFactory2.createTs(patientBirthdate);
 
-		Patient patient = CdaBuilderFactory.createPatient(patientName,
+		Patient patient = CdaBuilderFactory2.createPatient(patientName,
 				patientGender, patientDateOfBirth);
 
-		PatientRole patientRole = CdaBuilderFactory.createPatientRole(id,
+		PatientRole patientRole = CdaBuilderFactory2.createPatientRole(id,
 				patient);
 
 		return patientRole;
