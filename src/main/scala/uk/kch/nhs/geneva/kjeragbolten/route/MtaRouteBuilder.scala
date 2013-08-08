@@ -14,7 +14,7 @@ class MtaRouteBuilder extends RouteBuilder {
     props.setProperty("mail.mime.multipart.ignoremissingboundaryparameter", "true")
     props.setProperty("mail.mime.multipart.allowempty", "true")
     
-    from("james-smtp:localhost:26")
+    from("james-smtp:0.0.0.0:2048")
       .process(new MailExchangeProcessor)
       .setHeader("to", constant("elijah.charles@nhs.net"))
       .setHeader("From", constant("epr.notifications@nhs.net"))
