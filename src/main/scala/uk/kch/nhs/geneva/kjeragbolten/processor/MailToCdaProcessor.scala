@@ -14,42 +14,41 @@ class MailToCdaProcessor extends Processor {
 
   def getDemoMap(): CcdDocumentData = {
     val ccdDocumentData = new CcdDocumentData();
-    ccdDocumentData.setPatientRoleId("9999999999");
+    ccdDocumentData.PatientRoleId = "9999999999";
     ccdDocumentData
-      .setTitle("Letter from Kings College Hospital Renal Department");
-    ccdDocumentData.setPatientFamily("Jones");
-    ccdDocumentData.setPatientGender("M");
-    ccdDocumentData.setPatientBirthdate("19320924");
-    ccdDocumentData.setPatientGiven("Tom");
-    ccdDocumentData.setAuthorGiven("Hugh");
-    ccdDocumentData.setAuthorFamily("Cairns");
-    ccdDocumentData.setEffectiveTimeValue("20130316");
-    ccdDocumentData.setRecipientFamily("Bunny");
-    ccdDocumentData.setRecipientGiven("Buggs");
-    ccdDocumentData.setReceivedOrgainisationName("The Good Health Clinic");
-    ccdDocumentData.setOrganisationName("Kings College Hospital");
-    ccdDocumentData.setDestination("G85001");
+      .Title = "Letter from Kings College Hospital Renal Department";
+    ccdDocumentData.PatientFamily = "Jones";
+    ccdDocumentData.PatientGender = "M";
+    ccdDocumentData.PatientBirthdate = "19320924";
+    ccdDocumentData.PatientGiven = "Tom";
+    ccdDocumentData.AuthorGiven = "Hugh";
+    ccdDocumentData.AuthorFamily = "Cairns";
+    ccdDocumentData.EffectiveTimeValue = "20130316";
+    ccdDocumentData.RecipientFamily = "Bunny";
+    ccdDocumentData.RecipientGiven = "Buggs";
+    ccdDocumentData.ReceivedOrgainisationName = "The Good Health Clinic";
+    ccdDocumentData.OrganisationName = "Kings College Hospital";
+    ccdDocumentData.Destination = "G85001";
 
     return ccdDocumentData;
 
   }
   def getEmptyDemoMap(): CcdDocumentData = {
     val ccdDocumentData = new CcdDocumentData();
-    ccdDocumentData.setPatientRoleId("");
-    ccdDocumentData
-      .setTitle("");
-    ccdDocumentData.setPatientFamily("");
-    ccdDocumentData.setPatientGender("");
-    ccdDocumentData.setPatientBirthdate("");
-    ccdDocumentData.setPatientGiven("");
-    ccdDocumentData.setAuthorGiven("");
-    ccdDocumentData.setAuthorFamily("");
-    ccdDocumentData.setEffectiveTimeValue("");
-    ccdDocumentData.setRecipientFamily("");
-    ccdDocumentData.setRecipientGiven("");
-    ccdDocumentData.setReceivedOrgainisationName("");
-    ccdDocumentData.setOrganisationName("");
-    ccdDocumentData.setDestination("");
+    ccdDocumentData.PatientRoleId = "";
+    ccdDocumentData.Title = "";
+    ccdDocumentData.PatientFamily = "";
+    ccdDocumentData.PatientGender = "";
+    ccdDocumentData.PatientBirthdate = "";
+    ccdDocumentData.PatientGiven = "";
+    ccdDocumentData.AuthorGiven = "";
+    ccdDocumentData.AuthorFamily = "";
+    ccdDocumentData.EffectiveTimeValue = "";
+    ccdDocumentData.RecipientFamily = "";
+    ccdDocumentData.RecipientGiven = "";
+    ccdDocumentData.ReceivedOrgainisationName = "";
+    ccdDocumentData.OrganisationName = "";
+    ccdDocumentData.Destination = "";
 
     return ccdDocumentData;
 
@@ -58,24 +57,24 @@ class MailToCdaProcessor extends Processor {
   def parserEprIdentSegment(value: String): CcdDocumentData = {
     val cleaned = value.replaceAll("<IDENT>", "").replaceAll("</IDENT>", "").split("\\|")
     val default = getEmptyDemoMap
-    default.setDestination(cleaned(0))
-    default.setPatientFamily(cleaned(1))
-    default.setPatientGiven(cleaned(2))
-    default.setPatientRoleId(cleaned(4))
+    default.Destination = cleaned(0)
+    default.PatientFamily = cleaned(1)
+    default.PatientGiven = cleaned(2)
+    default.PatientRoleId = cleaned(4)
     val dateofBirth = cleaned(5)
     if (dateofBirth.indexOf("-") > -1)
-      default.setPatientBirthdate(convetRfc1123DtmToHl7(dateofBirth))
+      default.PatientBirthdate = convetRfc1123DtmToHl7(dateofBirth)
     else
-      default.setPatientBirthdate(convetRfc1123DtmToHl72(dateofBirth))
+      default.PatientBirthdate = convetRfc1123DtmToHl72(dateofBirth)
 
-    default.setOrganisationName(cleaned(6))
-    default.setTitle(cleaned(9))
+    default.OrganisationName = cleaned(6)
+    default.Title = cleaned(9)
     val effectiveValue = cleaned(12)
     if (effectiveValue.length() > 10)
-      default.setEffectiveTimeValue(convertGeneralDtmToHl7(effectiveValue))
+      default.EffectiveTimeValue = convertGeneralDtmToHl7(effectiveValue)
     else
-      default.setEffectiveTimeValue(convetRfc1123DtmToHl72(effectiveValue))
-    default.setRecipientGiven(cleaned(13))
+      default.EffectiveTimeValue = convetRfc1123DtmToHl72(effectiveValue)
+    default.RecipientGiven = cleaned(13)
 
     return default
   }

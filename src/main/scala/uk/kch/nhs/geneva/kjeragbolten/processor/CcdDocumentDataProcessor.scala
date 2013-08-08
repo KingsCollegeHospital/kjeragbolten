@@ -56,7 +56,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import uk.kch.nhs.geneva.kjeragbolten.CcdDocumentData;
-import static uk.kch.nhs.geneva.kjeragbolten.util.CdaBuilderFactory;
+import uk.kch.nhs.geneva.kjeragbolten.util.CdaBuilderFactory;
 import uk.kch.nhs.geneva.kjeragbolten.util.Pdf2Tiff;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.AddressListType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.AddressType;
@@ -70,323 +70,330 @@ import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.ManifestItemType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.ManifestType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.PayloadType;
 import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.PayloadsType;
+import uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.HandlingType;
+
+import scala.collection.JavaConversions._
+
+class CcdDocumentDataProcessor extends Processor {
+
+  @Override
+  @throws(classOf[Exception])
+  def process(exchange: Exchange) = {
+
+    val in = exchange.getIn();
+    val ccdDocumentData = in.getBody(classOf[CcdDocumentData]);
+    val attachments = in.getAttachments()
+      .entrySet();
+
+    for (attachment <- attachments) {
+
+      val inputAttachment = attachment.getValue().getDataSource()
+        .getInputStream();
+
+      val outputAttachment = Pdf2Tiff
+        .convertPdf2Tiff(inputAttachment);
+      val continuityOfCareDocument = this
+        .generateContinuityOfCareDocument(ccdDocumentData,
+          outputAttachment);
+
+      val document = this
+        .renderContinuityOfCareDocument(continuityOfCareDocument);
+
+      val d = this
+        .createPrimaryCDADistributionEnvelope(document,
+          ccdDocumentData.Destination,
+          "https://10.10.10.10/Acks",
+          "urn:nhs-uk:identity:tactix4");
+
+      exchange.getOut().setBody(d);
+      // CDA only supports one document/attachment
+      outputAttachment.close();
+      inputAttachment.close();
+    }
+  }
+
+  @throws(classOf[Exception])
+  private def renderContinuityOfCareDocument(
+    continuityOfCareDocument: ContinuityOfCareDocument): String = {
+    val sw = new StringWriter();
+    CDAUtil.save(continuityOfCareDocument, sw);
+    return sw.toString();
+  }
+
+  @throws(classOf[IOException])
+  private def generateContinuityOfCareDocument(
+    data: CcdDocumentData, attachment: InputStream): ContinuityOfCareDocument = {
+    val patientRoleIdRoot = data.PatientRoleIdRoot;
+    val patientRoleId = data.PatientRoleId;
+    val patientGiven = data.PatientGiven;
+    val patientFamily = data.PatientFamily;
+    val patientGenderCode = data.PatientGender;
+    val patientGenderCodeSystem = data.AdministrativeGenderCode;
+    val patientBirthdate = data.PatientBirthdate;
+    val patientRole = createPatientRole(patientRoleIdRoot,
+      patientRoleId, patientGiven, patientFamily, patientGenderCode,
+      patientGenderCodeSystem, patientBirthdate);
+
+    val effectiveTimeValue = data.EffectiveTimeValue;
+
+    val authorDocumentEffectiveDate = CdaBuilderFactory
+      .createTs(effectiveTimeValue);
+    // Healthtools don't allow same node to exist in 2 places
+    val documentEffectiveDate = CdaBuilderFactory
+      .createTs(effectiveTimeValue);
+
+    val authorGiven = data.AuthorGiven;
+    val authorFamily = data.AuthorFamily;
+    val author = createAuthor(authorGiven, authorFamily,
+      authorDocumentEffectiveDate);
+
+    val recipientFamily = data.RecipientFamily;
+    val recipientGiven = data.RecipientGiven;
+    val receivedOrgainisationName = data.ReceivedOrgainisationName;
+    val recipient = createRecipient(recipientFamily,
+      recipientGiven, receivedOrgainisationName);
+
+    val organisationName = data.OrganisationName;
+    val infrastructureRootId = data.InfrastructureRootId;
+    val custodian = createCustodian(organisationName,
+      infrastructureRootId);
+
+    // Add attachment
+
+    val mediaType = "image/tiff";
+    val component = createComponent(mediaType, attachment);
 
-public class CcdDocumentDataProcessor implements Processor {
-
-	@Override
-	public void process(Exchange exchange) throws Exception {
-		// CDABuilder builder = new CDABuilder();
-		Message in = exchange.getIn();
-		CcdDocumentData ccdDocumentData = in.getBody(CcdDocumentData.class);
-		Set<Entry<String, DataHandler>> attachments = in.getAttachments()
-				.entrySet();
-
-		for (Entry<String, DataHandler> attachment : attachments) {
-
-			InputStream inputAttachment = attachment.getValue().getDataSource()
-					.getInputStream();
-
-			InputStream outputAttachment = Pdf2Tiff
-					.convertPdf2Tiff(inputAttachment);
-			ContinuityOfCareDocument continuityOfCareDocument = this
-					.generateContinuityOfCareDocument(ccdDocumentData,
-							outputAttachment);
-
-			String document = this
-					.renderContinuityOfCareDocument(continuityOfCareDocument);
-
-			DistributionEnvelopeType d = this
-					.createPrimaryCDADistributionEnvelope(document,
-							ccdDocumentData.getDestination(),
-							"https://10.10.10.10/Acks",
-							"urn:nhs-uk:identity:tactix4");
-
-			exchange.getOut().setBody(d);
-			// CDA only supports one document/attachment
-			outputAttachment.close();
-			inputAttachment.close();
-			break;
-		}
-	}
-
-	private String renderContinuityOfCareDocument(
-			ContinuityOfCareDocument continuityOfCareDocument) throws Exception {
-		StringWriter sw = new StringWriter();
-		CDAUtil.save(continuityOfCareDocument, sw);
-		return sw.toString();
-	}
-
-	private ContinuityOfCareDocument generateContinuityOfCareDocument(
-			CcdDocumentData data, InputStream attachment) throws IOException {
-		String patientRoleIdRoot = data.getPatientRoleIdRoot();
-		String patientRoleId = data.getPatientRoleId();
-		String patientGiven = data.getPatientGiven();
-		String patientFamily = data.getPatientFamily();
-		String patientGenderCode = data.getPatientGender();
-		String patientGenderCodeSystem = data.getAdministrativeGenderCode();
-		String patientBirthdate = data.getPatientBirthdate();
-		PatientRole patientRole = createPatientRole(patientRoleIdRoot,
-				patientRoleId, patientGiven, patientFamily, patientGenderCode,
-				patientGenderCodeSystem, patientBirthdate);
-
-		String effectiveTimeValue = data.getEffectiveTimeValue();
-
-		TS authorDocumentEffectiveDate = CdaBuilderFactory
-				.createTs(effectiveTimeValue);
-		// Healthtools don't allow same node to exist in 2 places
-		TS documentEffectiveDate = CdaBuilderFactory
-				.createTs(effectiveTimeValue);
-
-		String authorGiven = data.getAuthorGiven();
-		String authorFamily = data.getAuthorFamily();
-		Author author = createAuthor(authorGiven, authorFamily,
-				authorDocumentEffectiveDate);
-
-		String recipientFamily = data.getRecipientFamily();
-		String recipientGiven = data.getRecipientGiven();
-		String receivedOrgainisationName = data.getReceivedOrgainisationName();
-		InformationRecipient recipient = createRecipient(recipientFamily,
-				recipientGiven, receivedOrgainisationName);
-
-		String organisationName = data.getOrganisationName();
-		String infrastructureRootId = data.getInfrastructureRootId();
-		Custodian custodian = createCustodian(organisationName,
-				infrastructureRootId);
-
-		// Add attachment
-
-		String mediaType = "image/tiff";
-		Component2 component = createComponent(mediaType, attachment);
-
-		String title = data.getTitle();
-		ST documentTitle = CdaBuilderFactory.createSt(title);
-
-		String root = data.getRoot();
-		String extension = data.getExtension();
-		II docId = CdaBuilderFactory.createIi(root, extension);
-
-		ContinuityOfCareDocument ccdDocument = CdaBuilderFactory
-				.createContinuityOfCareDocument(documentTitle,
-						documentEffectiveDate, author, recipient, custodian,
-						docId, patientRole);
-		ccdDocument.setComponent(component);
-
-		return ccdDocument;
-	}
+    val title = data.Title;
+    val documentTitle = CdaBuilderFactory.createSt(title);
 
-	public Component2 createComponent(String mediaType, InputStream inputStream)
-			throws IOException {
-		String base64 = new String(Base64.encodeBase64(IOUtils
-				.toByteArray(inputStream)));
+    val root = data.Root;
+    val extension = data.Extension;
+    val docId = CdaBuilderFactory.createIi(root, extension);
 
-		ED nonXmlData = CdaBuilderFactory.createCustodian(mediaType,
-				BinaryDataEncoding.B64, base64);
+    val ccdDocument = CdaBuilderFactory
+      .createContinuityOfCareDocument(documentTitle,
+        documentEffectiveDate, author, recipient, custodian,
+        docId, patientRole);
+    ccdDocument.setComponent(component);
 
-		NonXMLBody nonXMLBody = CdaBuilderFactory.createNonXmlBody(nonXmlData);
+    return ccdDocument;
+  }
 
-		// return document as string
+  @throws(classOf[IOException])
+  def createComponent(mediaType: String, inputStream: InputStream): Component2 = {
+    val base64 = new String(Base64.encodeBase64(IOUtils
+      .toByteArray(inputStream)));
 
-		return CdaBuilderFactory.createComponent2(nonXMLBody);
-	}
+    val nonXmlData = CdaBuilderFactory.createCustodian(mediaType,
+      BinaryDataEncoding.B64, base64);
 
-	public Custodian createCustodian(String organisationName,
-			String infrastructureRootId) {
-		ON custOrgName = CdaBuilderFactory.createOn(organisationName);
+    val nonXMLBody = CdaBuilderFactory.createNonXmlBody(nonXmlData);
 
-		InfrastructureRootTypeId rootId = CdaBuilderFactory
-				.createInfrastructureRootTypeId(infrastructureRootId);
-
-		CustodianOrganization custOrg = CdaBuilderFactory
-				.createCustodianOrganization(custOrgName, rootId);
-
-		AssignedCustodian assignedCustodian = CdaBuilderFactory
-				.createAssignedCustodian(custOrg);
-
-		Custodian custodian = CdaBuilderFactory
-				.createCustodian(assignedCustodian);
-		return custodian;
-	}
-
-	public InformationRecipient createRecipient(String recipientFamily,
-			String recipientGiven, String receivedOrgainisationName) {
-		Person intendedPerson = CdaBuilderFactory.createPerson();
-
-		PN intendedPersonName = CdaBuilderFactory.createPn(recipientGiven,
-				recipientFamily);
-
-		ON orgName = CdaBuilderFactory.createOn(receivedOrgainisationName);
-
-		Organization org = CdaBuilderFactory.createOrganization();
-
-		IntendedRecipient intendedRecipient = CdaBuilderFactory
-				.createIntendedRecipient(intendedPerson, org,
-						intendedPersonName, orgName);
-
-		InformationRecipient recipient = CdaBuilderFactory
-				.createInformationRecipient(intendedRecipient);
-		return recipient;
-	}
-
-	public Author createAuthor(String authorGiven, String authorFamily,
-			TS documentEffectiveDate) {
-		Person authorPerson = CdaBuilderFactory.createPerson();
-		AssignedAuthor assignedAuthor = CdaBuilderFactory
-				.createAssignedAuthor(authorPerson);
-
-		PN authorName = CdaBuilderFactory.createPn(authorGiven, authorFamily);
-
-		Author author = CdaBuilderFactory.createAuthor(documentEffectiveDate,
-				assignedAuthor, authorName);
-		return author;
-	}
-
-	public PatientRole createPatientRole(String patientRoleIdRoot,
-			String patientRoleId, String patientGiven, String patientFamily,
-			String patientGenderCode, String patientGenderCodeSystem,
-			String patientBirthdate) {
-		II id = CdaBuilderFactory.createIi(patientRoleIdRoot, patientRoleId);
-
-		// create a patient object and add it to patient role
-
-		PN patientName = CdaBuilderFactory
-				.createPn(patientGiven, patientFamily);
-
-		CE patientGender = CdaBuilderFactory.createCe(patientGenderCode,
-				patientGenderCodeSystem);
-
-		TS patientDateOfBirth = CdaBuilderFactory.createTs(patientBirthdate);
-
-		Patient patient = CdaBuilderFactory.createPatient(patientName,
-				patientGender, patientDateOfBirth);
-
-		PatientRole patientRole = CdaBuilderFactory.createPatientRole(id,
-				patient);
-
-		return patientRole;
-	}
-
-	public DistributionEnvelopeType createPrimaryCDADistributionEnvelope(
-			String payload, String desination, String senderAddress,
-			String auditIdentity) throws SAXException, IOException,
-			ParserConfigurationException {
-		HandlingType handling = new HandlingType();
-		HandlingSpecType spec1 = new HandlingSpecType();
-		spec1.setKey("urn:nhs-itk:ns:201005:ackrequested");
-		spec1.setValue("false");
-		HandlingSpecType spec2 = new HandlingSpecType();
-		spec2.setKey("urn:nhs-itk:ns:201005:interaction");
-		spec2.setValue("urn:nhs-itk:interaction:primaryRecipientNonCodedCDADocument-v2-0");
-		handling.getSpec().add(spec1);
-		handling.getSpec().add(spec2);
-
-		return createDistributionEnvelope(
-				"urn:nhs-en:profile:nonCodedCDADocument-v2-0",
-				"urn:nhs-itk:services:201005:SendCDADocument-v2-0", handling,
-				desination, payload, senderAddress, auditIdentity);
-	}
-
-	public static DistributionEnvelopeType createCopyCDADistributionEnvelope(
-			String payload, String destination, String senderAddress,
-			String auditIdentity) throws SAXException, IOException,
-			ParserConfigurationException {
-		HandlingType handling = new HandlingType();
-		HandlingSpecType spec1 = new HandlingSpecType();
-		spec1.setKey("urn:nhs-itk:ns:201005:ackrequested");
-		spec1.setValue("true");
-		HandlingSpecType spec2 = new HandlingSpecType();
-		spec2.setKey("urn:nhs-itk:ns:201005:interaction");
-		spec2.setValue("urn:nhs-itk:interaction:copyRecipientNonCodedCDADocument-v2-0");
-		handling.getSpec().add(spec1);
-		handling.getSpec().add(spec2);
-
-		return createDistributionEnvelope(
-				"urn:nhs-en:profile:nonCodedCDADocument-v2-0",
-				"urn:nhs-itk:services:201005:SendCDADocument-v2-0", handling,
-				destination, payload, senderAddress, auditIdentity);
-	}
-
-	public static DistributionEnvelopeType createInfrastructureAckDistributionEnvelope(
-			String payload, String destination, String senderAddress,
-			String auditIdentity) throws SAXException, IOException,
-			ParserConfigurationException {
-		HandlingType handling = new HandlingType();
-		HandlingSpecType spec = new HandlingSpecType();
-		spec.setKey("urn:nhs-itk:ns:201005:interaction");
-		spec.setValue("urn:nhs-itk:interaction:ITKInfrastructureAcknowledgement-v1-0");
-		handling.getSpec().add(spec);
-		return createDistributionEnvelope(
-				"urn:nhs-en:profile:ITKInfrastructureAcknowledgement-v1-0",
-				"urn:nhs-itk:services:201005:SendInfrastructureAck-v1-0",
-				handling, destination, payload, senderAddress, auditIdentity);
-	}
-
-	private static DistributionEnvelopeType createDistributionEnvelope(
-			String profileID,
-			String service,
-			uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk.HandlingType handlingType,
-			String destination, String stringPayload, String senderAddress,
-			String auditIdentity) throws SAXException, IOException,
-			ParserConfigurationException {
-
-		String headerUuid = UUID.randomUUID().toString().toUpperCase();
-		Random r = new Random();
-		char c = (char) (r.nextInt(26) + 'A');
-		String payloadId = String.format("%c%s", c, headerUuid);
-
-		IdentityType id = new IdentityType();
-		id.setUri(auditIdentity);
-
-		AuditIdentityType ai = new AuditIdentityType();
-		ai.getId().add(id);
-
-		AddressType address = new AddressType();
-		address.setUri("urn:nhs-uk:addressing:ods:" + destination);
-
-		AddressListType addressList = new AddressListType();
-		addressList.getAddress().add(address);
-
-		AddressType saddress = new AddressType();
-		saddress.setUri(senderAddress);
-
-		ManifestItemType item = new ManifestItemType();
-		item.setMimetype("text/xml");
-		item.setId(payloadId);
-		item.setProfileid(profileID);
-
-		ManifestType manifest = new ManifestType();
-		manifest.setCount(BigInteger.ONE);
-		manifest.getManifestitem().add(item);
-
-		DistributionHeaderType header = new DistributionHeaderType();
-		header.setTrackingid(headerUuid);
-		header.setAuditIdentity(ai);
-		header.setService(service);
-		header.setAddresslist(addressList);
-		header.setSenderAddress(saddress);
-		header.setHandlingSpecification(handlingType);
-		header.setManifest(manifest);
-
-		DistributionEnvelopeType d = new DistributionEnvelopeType();
-		d.setHeader(header);
-
-		// build xml data from string and insert into payload
-
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(true);
-		DocumentBuilder docBuilder = factory.newDocumentBuilder();
-		Document doc = docBuilder.parse(new InputSource(new StringReader(
-				stringPayload)));
-
-		PayloadType payload = new PayloadType();
-		payload.setId(payloadId);
-		payload.getContent().add(doc.getDocumentElement());
-
-		PayloadsType payloads = new PayloadsType();
-		payloads.setCount(BigInteger.ONE);
-		payloads.getPayload().add(payload);
-		d.setPayloads(payloads);
-
-		return d;
-
-	}
+    // return document as string
+
+    return CdaBuilderFactory.createComponent2(nonXMLBody);
+  }
+
+  def createCustodian(organisationName: String,
+    infrastructureRootId: String): Custodian = {
+    val custOrgName = CdaBuilderFactory.createOn(organisationName);
+
+    val rootId = CdaBuilderFactory
+      .createInfrastructureRootTypeId(infrastructureRootId);
+
+    val custOrg = CdaBuilderFactory
+      .createCustodianOrganization(custOrgName, rootId);
+
+    val assignedCustodian = CdaBuilderFactory
+      .createAssignedCustodian(custOrg);
+
+    val custodian = CdaBuilderFactory
+      .createCustodian(assignedCustodian);
+    return custodian;
+  }
+
+  def createRecipient(recipientFamily: String,
+    recipientGiven: String, receivedOrgainisationName: String): InformationRecipient = {
+    val intendedPerson = CdaBuilderFactory.createPerson();
+
+    val intendedPersonName = CdaBuilderFactory.createPn(recipientGiven,
+      recipientFamily);
+
+    val orgName = CdaBuilderFactory.createOn(receivedOrgainisationName);
+
+    val org = CdaBuilderFactory.createOrganization;
+
+    val intendedRecipient = CdaBuilderFactory
+      .createIntendedRecipient(intendedPerson, org,
+        intendedPersonName, orgName);
+
+    val recipient = CdaBuilderFactory
+      .createInformationRecipient(intendedRecipient);
+    return recipient;
+  }
+
+  def createAuthor(authorGiven: String, authorFamily: String,
+    documentEffectiveDate: TS): Author = {
+    val authorPerson = CdaBuilderFactory.createPerson();
+    val assignedAuthor = CdaBuilderFactory
+      .createAssignedAuthor(authorPerson);
+
+    val authorName = CdaBuilderFactory.createPn(authorGiven, authorFamily);
+
+    val author = CdaBuilderFactory.createAuthor(documentEffectiveDate,
+      assignedAuthor, authorName);
+    return author;
+  }
+
+  def createPatientRole(patientRoleIdRoot: String,
+    patientRoleId: String, patientGiven: String, patientFamily: String,
+    patientGenderCode: String, patientGenderCodeSystem: String,
+    patientBirthdate: String): PatientRole = {
+    val id = CdaBuilderFactory.createIi(patientRoleIdRoot, patientRoleId);
+
+    // create a patient object and add it to patient role
+
+    val patientName = CdaBuilderFactory
+      .createPn(patientGiven, patientFamily);
+
+    val patientGender = CdaBuilderFactory.createCe(patientGenderCode,
+      patientGenderCodeSystem);
+
+    val patientDateOfBirth = CdaBuilderFactory.createTs(patientBirthdate);
+
+    val patient = CdaBuilderFactory.createPatient(patientName,
+      patientGender, patientDateOfBirth);
+
+    val patientRole = CdaBuilderFactory.createPatientRole(id,
+      patient);
+
+    return patientRole;
+  }
+
+  @throws(classOf[SAXException])
+  @throws(classOf[IOException])
+  @throws(classOf[ParserConfigurationException])
+  def createPrimaryCDADistributionEnvelope(
+    payload: String, desination: String, senderAddress: String,
+    auditIdentity: String): DistributionEnvelopeType = {
+    val handling = new HandlingType();
+    val spec1 = new HandlingSpecType();
+    spec1.setKey("urn:nhs-itk:ns:201005:ackrequested");
+    spec1.setValue("false");
+    val spec2 = new HandlingSpecType();
+    spec2.setKey("urn:nhs-itk:ns:201005:interaction");
+    spec2.setValue("urn:nhs-itk:interaction:primaryRecipientNonCodedCDADocument-v2-0");
+    handling.getSpec().add(spec1);
+    handling.getSpec().add(spec2);
+
+    return createDistributionEnvelope(
+      "urn:nhs-en:profile:nonCodedCDADocument-v2-0",
+      "urn:nhs-itk:services:201005:SendCDADocument-v2-0", handling,
+      desination, payload, senderAddress, auditIdentity);
+  }
+
+  @throws(classOf[SAXException]) @throws(classOf[IOException]) @throws(classOf[ParserConfigurationException])
+  def createCopyCDADistributionEnvelope(
+    payload: String, destination: String, senderAddress: String,
+    auditIdentity: String): DistributionEnvelopeType = {
+    val handling = new HandlingType();
+    val spec1 = new HandlingSpecType();
+    spec1.setKey("urn:nhs-itk:ns:201005:ackrequested");
+    spec1.setValue("true");
+    val spec2 = new HandlingSpecType();
+    spec2.setKey("urn:nhs-itk:ns:201005:interaction");
+    spec2.setValue("urn:nhs-itk:interaction:copyRecipientNonCodedCDADocument-v2-0");
+    handling.getSpec().add(spec1);
+    handling.getSpec().add(spec2);
+
+    return createDistributionEnvelope(
+      "urn:nhs-en:profile:nonCodedCDADocument-v2-0",
+      "urn:nhs-itk:services:201005:SendCDADocument-v2-0", handling,
+      destination, payload, senderAddress, auditIdentity);
+  }
+
+  @throws(classOf[SAXException]) @throws(classOf[IOException]) @throws(classOf[ParserConfigurationException])
+  def createInfrastructureAckDistributionEnvelope(
+    payload: String, destination: String, senderAddress: String,
+    auditIdentity: String): DistributionEnvelopeType = {
+    val handling = new HandlingType();
+    val spec = new HandlingSpecType();
+    spec.setKey("urn:nhs-itk:ns:201005:interaction");
+    spec.setValue("urn:nhs-itk:interaction:ITKInfrastructureAcknowledgement-v1-0");
+    handling.getSpec().add(spec);
+    return createDistributionEnvelope(
+      "urn:nhs-en:profile:ITKInfrastructureAcknowledgement-v1-0",
+      "urn:nhs-itk:services:201005:SendInfrastructureAck-v1-0",
+      handling, destination, payload, senderAddress, auditIdentity);
+  }
+
+  @throws(classOf[SAXException]) @throws(classOf[IOException]) @throws(classOf[ParserConfigurationException])
+  def createDistributionEnvelope(
+    profileID: String,
+    service: String,
+    handlingType: HandlingType,
+    destination: String, stringPayload: String, senderAddress: String,
+    auditIdentity: String): DistributionEnvelopeType = {
+
+    val headerUuid = UUID.randomUUID().toString().toUpperCase();
+    val r = new Random();
+    val c = (r.nextInt(26) + 'A').toChar.toString;
+    val payloadId = String.format("%c%s", c, headerUuid);
+
+    val id = new IdentityType();
+    id.setUri(auditIdentity);
+
+    val ai = new AuditIdentityType();
+    ai.getId().add(id);
+
+    val address = new AddressType();
+    address.setUri("urn:nhs-uk:addressing:ods:" + destination);
+
+    val addressList = new AddressListType();
+    addressList.getAddress().add(address);
+
+    val saddress = new AddressType();
+    saddress.setUri(senderAddress);
+
+    val item = new ManifestItemType();
+    item.setMimetype("text/xml");
+    item.setId(payloadId);
+    item.setProfileid(profileID);
+
+    val manifest = new ManifestType();
+    manifest.setCount(BigInteger.ONE);
+    manifest.getManifestitem().add(item);
+
+    val header = new DistributionHeaderType();
+    header.setTrackingid(headerUuid);
+    header.setAuditIdentity(ai);
+    header.setService(service);
+    header.setAddresslist(addressList);
+    header.setSenderAddress(saddress);
+    header.setHandlingSpecification(handlingType);
+    header.setManifest(manifest);
+
+    val d = new DistributionEnvelopeType();
+    d.setHeader(header);
+
+    // build xml data from string and insert into payload
+
+    val factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    val docBuilder = factory.newDocumentBuilder();
+    val doc = docBuilder.parse(new InputSource(new StringReader(
+      stringPayload)));
+
+    val payload = new PayloadType();
+    payload.setId(payloadId);
+    payload.getContent().add(doc.getDocumentElement());
+
+    val payloads = new PayloadsType();
+    payloads.setCount(BigInteger.ONE);
+    payloads.getPayload().add(payload);
+    d.setPayloads(payloads);
+
+    return d;
+
+  }
 }

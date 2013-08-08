@@ -39,58 +39,58 @@ class ParserTest extends CamelTestSupport {
   
   @Test
   def getDestination() {  
-    assertEquals("G85001", data.getDestination())
+    assertEquals("G85001", data.Destination)
   }
   @Test
   def test_PatientRoleId() {  
-    assertEquals("4961016322", data.getPatientRoleId())
+    assertEquals("4961016322", data.PatientRoleId)
   }
   @Test
   def test_Title() {  
-    assertEquals("A&E GP Letter", data.getTitle())
+    assertEquals("A&E GP Letter", data.Title)
   }
   @Test
   def test_PatientFamily() {  
-    assertEquals("Cather", data.getPatientFamily())
+    assertEquals("Cather", data.PatientFamily)
   }
   @Test
   def test_PatientGender() {  
-    assertEquals("", data.getPatientGender())
+    assertEquals("", data.PatientGender)
   }
   @Test
   def test_PatientBirthdate() {  
-    assertEquals("19240724", data.getPatientBirthdate())
+    assertEquals("19240724", data.PatientBirthdate)
   }
   @Test
   def test_PatientGiven() {  
-    assertEquals("Peter", data.getPatientGiven())
+    assertEquals("Peter", data.PatientGiven)
   }
   @Test
   def test_AuthorGiven() {  
-    assertEquals("", data.getAuthorGiven())
+    assertEquals("", data.AuthorGiven)
   }
   @Test
   def test_AuthorFamily() {  
-    assertEquals("", data.getAuthorFamily())
+    assertEquals("", data.AuthorFamily)
   }
   @Test
   def test_EffectiveTimeValue() {  
-    assertEquals("20130805000905", data.getEffectiveTimeValue())
+    assertEquals("20130805000905", data.EffectiveTimeValue)
   }
   @Test
   def test_RecipientFamily() {  
-    assertEquals("", data.getRecipientFamily())
+    assertEquals("", data.RecipientFamily)
   }
   @Test
   def test_RecipientGiven() {  
-    assertEquals("G8630894", data.getRecipientGiven())
+    assertEquals("G8630894", data.RecipientGiven)
   }
   @Test
   def test_ReceivedOrgainisationName() {  
-    assertEquals("", data.getReceivedOrgainisationName())
+    assertEquals("", data.ReceivedOrgainisationName)
   }
   @Test
   def test_OrganisationName() {  
-    assertEquals("KINGS COLLEGE HOSPITAL", data.getOrganisationName())
+    assertEquals("KINGS COLLEGE HOSPITAL", data.OrganisationName)
   }
 }

@@ -13,9 +13,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Pdf2Tiff {
+object Pdf2Tiff {
 
-	private static Logger logger = LoggerFactory.getLogger(Pdf2Tiff.class);
+	val logger = LoggerFactory.getLogger(Pdf2Tiff.getClass);
 
 	/**
 	 * @param pdfFile
@@ -28,31 +28,33 @@ public class Pdf2Tiff {
 	 *             trying to convert It could be that the convert function is
 	 *             missing and an empty tiff file is produced.
 	 */
-	public static InputStream convertPdf2Tiff(InputStream fis)
-			throws IOException, InterruptedException, IM4JavaException {
+	@throws (classOf[IOException])
+	@throws (classOf[InterruptedException])
+	@throws (classOf[IM4JavaException]) 
+	def  convertPdf2Tiff( fis : InputStream) : InputStream =			{
 
-		File tiffFile = File.createTempFile("output", ".tiff");
+		val tiffFile = File.createTempFile("output", ".tiff");
 		logger.info("Generating tiff file:" + tiffFile.getPath());
 
-		IMOperation op = new IMOperation();
+		val op = new IMOperation();
 		op.addImage("-"); // read from stdin
 		op.trim(); // trim transparent edges
 		op.background("white"); // some viewers have a default white background
 		op.flatten(); // flatten layers
 		op.compress("lzw"); // compress
-		op.type("palette"); // reduce colour space to save file size
+		op.`type`("palette"); // reduce colour space to save file size
 		op.addImage("tif:-"); // write to stdout in tif-format
 
 		logger.info("Creating I/O streams..");
 
-		FileOutputStream fos = new FileOutputStream(tiffFile);
-		Pipe pipeIn = new Pipe(fis, null);
-		Pipe pipeOut = new Pipe(null, fos);
+		val fos = new FileOutputStream(tiffFile);
+		val pipeIn = new Pipe(fis, null);
+		val pipeOut = new Pipe(null, fos);
 
 		logger.info("Preparing conversion..");
 
 		// set up command and run
-		ConvertCmd convert = new ConvertCmd();
+		val convert = new ConvertCmd();
 		convert.setInputProvider(pipeIn);
 		convert.setOutputConsumer(pipeOut);
 		convert.run(op);

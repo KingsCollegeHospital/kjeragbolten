@@ -32,6 +32,7 @@ import org.apache.commons.io.IOUtils
 import com.sun.mail.util.PropUtil
 
 class IntegrationTest extends CamelTestSupport {
+  @Ignore
   @Test
   def sendToExternalServer() {
     val smlMessage = IOUtils.toString(getClass.getClassLoader.getResourceAsStream("Subject  Anaemia Clinic  from King's Renal Unit (KCH No V278328).eml"))
