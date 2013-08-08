@@ -337,8 +337,8 @@ class CcdDocumentDataProcessor extends Processor {
 
     val headerUuid = UUID.randomUUID().toString().toUpperCase();
     val r = new Random();
-    val c = (r.nextInt(26) + 'A').toChar.toString;
-    val payloadId = String.format("%c%s", c, headerUuid);
+    val c = (r.nextInt(26) + 65).toChar.toString;
+    val payloadId = String.format("%s%s", c, headerUuid);
 
     val id = new IdentityType();
     id.setUri(auditIdentity);

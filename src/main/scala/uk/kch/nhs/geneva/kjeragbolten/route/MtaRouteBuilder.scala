@@ -4,6 +4,7 @@ import org.apache.camel.Exchange
 import org.apache.camel.builder.RouteBuilder
 import uk.kch.nhs.geneva.kjeragbolten.processor.CcdDocumentDataProcessor
 import uk.kch.nhs.geneva.kjeragbolten.processor.MailToCdaProcessor
+import uk.kch.nhs.geneva.kjeragbolten.processor.MailExchangeProcessor
 
 class MtaRouteBuilder extends RouteBuilder {
 

@@ -301,66 +301,70 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Import-Package>
-							javax.activation, javax.crypto, javax.crypto.spec,
-							javax.jws, javax.jws.soap, javax.net, javax.net.ssl,
-							javax.mail.util, javax.naming,
-							javax.mail, javax.mail.internet,
+							!com.google.protobuf,
+							!com.ibm.icu.lang,
+							!com.ibm.icu.text,
+							javax.activation,
+							javax.crypto,
+							javax.crypto.spec,
+							javax.imageio,
+							javax.imageio.stream,
+							javax.jws,
+							javax.jws.soap,
+							javax.mail,
+							javax.mail.internet,
+							javax.mail.util,
+							javax.naming,
+							javax.net,
+							javax.net.ssl,
+							javax.servlet,
+							javax.servlet.http,
 							javax.xml.bind,
 							javax.xml.bind.annotation,
 							javax.xml.bind.annotation.adapters,
 							javax.xml.datatype,
-							javax.xml.namespace, javax.xml.parsers,
+							javax.xml.namespace,
+							javax.xml.parsers,
 							javax.xml.transform,
 							javax.xml.transform.dom,
 							javax.xml.transform.stream,
-							javax.xml.validation, javax.xml.ws,
+							javax.xml.validation,
+							javax.xml.ws,
 							javax.xml.xpath,
-							org.apache.camel, org.apache.camel.builder,
-							org.apache.camel.main, org.apache.camel.scala.dsl,
-							org.apache.camel.scala.dsl.builder,
-							org.osgi.framework,
-							org.w3c.dom, org.xml.sax, org.xml.sax.ext,
-							org.xml.sax.helpers,
-							scala, scala.collection,
-							scala.collection.generic,
-							scala.collection.mutable,
-							scala.reflect, scala.runtime,
-							!com.ibm.icu.lang, !com.ibm.icu.text,
-							!lpg.runtime,
-							!org.eclipse.osgi.util,
 							!junit.framework,
-							!org.apache.tools.ant,
-							!org.apache.tools.ant.types,
-							!org.eclipse.core.resources,
+							org.apache.camel,
+							org.apache.camel.builder,
+							org.apache.camel.impl,
+							org.apache.camel.model,
+							org.apache.camel.util,
+							!org.apache.commons.logging,
+							!org.apache.log4j,
+							org.apache.tools.ant,
+							org.apache.tools.ant.types,
+							org.eclipse.core.resources,
 							!org.eclipse.core.runtime,
 							!org.eclipse.core.runtime.content,
-							!org.slf4j.impl,
-							org.apache.camel.impl, org.apache.camel.util,
-							!com.google.protobuf, !javax.servlet, !javax.servlet.http,
-							!org.apache.commons.logging, !org.apache.log4j,
+							org.eclipse.osgi.util,
 							!org.jboss.logging,
-							!org.osgi.service.log, !org.osgi.util.tracker,
-							!sun.misc,
-							org.apache.camel.model,
-							!org.eclipse.core.internal.preferences,
-							!org.eclipse.core.internal.preferences.exchange,
-							!org.eclipse.core.internal.runtime.auth,
-							!org.eclipse.core.runtime.jobs,
-							!org.eclipse.core.runtime.preferences,
-							!org.eclipse.equinox.app,
-							!org.eclipse.equinox.internal.app,
-							!org.eclipse.osgi.framework.log,
-							!org.eclipse.osgi.service.datalocation,
-							!org.eclipse.osgi.service.debug,
-							!org.eclipse.osgi.service.environment,
-							!org.eclipse.osgi.service.resolver,
-							!org.osgi.service.packageadmin,
-							!org.osgi.service.prefs,
-							javax.imageio, javax.imageio.stream,
-							uk.kch.nhs.geneva.kjeragbolten.processor
+							org.osgi.framework,
+							!org.osgi.service.log,
+							!org.osgi.util.tracker,
+							org.slf4j.impl,
+							org.w3c.dom,
+							org.xml.sax,
+							org.xml.sax.ext,
+							org.xml.sax.helpers,
+							scala,
+							scala.collection,
+							scala.collection.generic,
+							scala.collection.mutable,
+							scala.reflect,
+							scala.runtime,
+							!sun.misc
 						</Import-Package>
 						<Embed-Dependency>
 							org.eclipse.emf.common,
+							org.openhealthtools.mdht.emf.runtime,
 							org.openhealthtools.mdht.uml.cda.ccd,
 							org.openhealthtools.mdht.uml.cda,
 							org.openhealthtools.mdht.uml.hl7.rim,
@@ -384,15 +388,15 @@
 							protocols-netty,
 							protocols-smtp,
 							netty,
-							org.openhealthtools.mdht.emf.runtime,
 							im4java
 						</Embed-Dependency>
 						<Export-Package>
 							uk.kch.nhs.geneva.kjeragbolten,
+							uk.kch.nhs.geneva.kjeragbolten.util,
+							uk.kch.nhs.geneva.kjeragbolten.processor,
 							uk.kch.nhs.geneva.kjeragbolten.generated.datatypes.itk,
 							uk.kch.nhs.geneva.kjeragbolten.generated.services.itk,
-							uk.kch.nhs.geneva.kjeragbolten.route,
-							services.org.apache.camel.component.james-smtp
+							uk.kch.nhs.geneva.kjeragbolten.route
 						</Export-Package>
 					</instructions>
 				</configuration>
@@ -411,15 +415,6 @@
 						<include>**/*Test.*</include>
 						<include>**/*Suite.*</include>
 					</includes>
-				</configuration>
-			</plugin>
-			<!-- allows the route to be run via 'mvn exec:java' -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
-				<configuration>
-					<mainClass>uk.kch.nhs.geneva.kjeragbolten.App</mainClass>
 				</configuration>
 			</plugin>
 			<!-- allows the route to be run via 'mvn camel:run' -->

@@ -52,6 +52,7 @@ class MailToCdaProcessorTest extends CamelTestSupport {
     }
   }
 
+  @Ignore
   @Test
   def sendRenalWithAttachmentMessage() {
     val smlMessage = IOUtils.toString(getClass.getClassLoader.getResourceAsStream("Subject  Anaemia Clinic  from King's Renal Unit (KCH No V278328).eml"))

@@ -1,4 +1,4 @@
-package uk.kch.nhs.geneva.kjeragbolten.route
+package uk.kch.nhs.geneva.kjeragbolten.processor
 
 import org.apache.camel.Processor
 import org.apache.camel.Exchange

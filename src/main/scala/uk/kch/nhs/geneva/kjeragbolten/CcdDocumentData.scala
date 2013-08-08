@@ -54,8 +54,5 @@ class CcdDocumentData(
         "2.16.840.1.113883.19.5",
         null);
   }
-  
-  def moo() : String = {
-    this.AdministrativeGenderCode;
-  }
+
 }

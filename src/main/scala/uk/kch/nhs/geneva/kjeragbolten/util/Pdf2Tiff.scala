@@ -39,8 +39,8 @@ object Pdf2Tiff {
 		val op = new IMOperation();
 		op.addImage("-"); // read from stdin
 		op.trim(); // trim transparent edges
-		op.background("white"); // some viewers have a default white background
-		op.alpha("off"); // flatten layers
+		// op.background("white"); // some viewers have a default white background
+		op.alpha("remove"); // flatten layers
 		op.compress("lzw"); // compress
 		op.`type`("palette"); // reduce colour space to save file size
 		op.addImage("tif:-"); // write to stdout in tif-format
