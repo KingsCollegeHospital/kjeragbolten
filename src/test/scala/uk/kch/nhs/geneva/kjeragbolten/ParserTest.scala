@@ -1,9 +1,6 @@
 package uk.kch.nhs.geneva.kjeragbolten
 
-import org.apache.camel.test.junit4.CamelTestSupport
 import org.apache.camel.builder.RouteBuilder
-import org.junit._
-import Assert._
 import org.apache.camel.ExchangePattern
 import org.apache.commons.net.smtp.SMTPClient
 import org.apache.commons.net.smtp.SimpleSMTPHeader
@@ -25,72 +22,72 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.InternetHeaders.InternetHeader
 import javax.mail.Header
 import javax.mail.internet.MimeMultipart
-import uk.kch.nhs.geneva.kjeragbolten.route.MailExchangeProcessor
 import javax.mail.Address
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.io.IOUtils
 import com.sun.mail.util.PropUtil
 import uk.kch.nhs.geneva.kjeragbolten.processor.MailToCdaProcessor
+import org.scalatest.junit.JUnitSuite
+import org.scalatest.junit.ShouldMatchersForJUnit
+import org.junit.Test
 
-class ParserTest extends CamelTestSupport {
+class ParserTest extends JUnitSuite  with ShouldMatchersForJUnit {
   val identValue = "<IDENT>G85001|Cather|Peter|D446358|4961016322|24-Jul-1924|KINGS COLLEGE HOSPITAL|||A&E GP Letter|986867886||05/08/2013 00:09:05|G8630894||</IDENT>"
   val parser = new MailToCdaProcessor
   val data = parser.parserEprIdentSegment(identValue)
-  
-  @Test
-  def getDestination() {  
-    assertEquals("G85001", data.Destination)
+
+  @Test def destination_should_be_parsed_in = {
+    data.Destination should equal("G85001")
   }
-  @Test
-  def test_PatientRoleId() {  
-    assertEquals("4961016322", data.PatientRoleId)
+
+  @Test def PatientRoleId_should_be_parsed_in = {
+    data.PatientRoleId should equal("4961016322")
   }
-  @Test
-  def test_Title() {  
-    assertEquals("A&E GP Letter", data.Title)
+
+  @Test def Title_should_be_parsed_in = {
+    data.Title should equal("A&E GP Letter")
   }
-  @Test
-  def test_PatientFamily() {  
-    assertEquals("Cather", data.PatientFamily)
+  @Test def PatientFamily_should_be_parsed_in = {
+    data.PatientFamily should equal("Cather")
   }
-  @Test
-  def test_PatientGender() {  
-    assertEquals("", data.PatientGender)
+
+  @Test def PatientGender_should_be_parsed_in = {
+    data.PatientGender should equal("")
   }
-  @Test
-  def test_PatientBirthdate() {  
-    assertEquals("19240724", data.PatientBirthdate)
+
+  @Test def PatientBirthdate_should_be_parsed_in = {
+    data.PatientBirthdate should equal("19240724")
   }
-  @Test
-  def test_PatientGiven() {  
-    assertEquals("Peter", data.PatientGiven)
+
+  @Test def PatientGiven_should_be_parsed_in = {
+    data.PatientGiven should equal("Peter")
   }
-  @Test
-  def test_AuthorGiven() {  
-    assertEquals("", data.AuthorGiven)
+
+  @Test def AuthorGiven_should_be_parsed_in = {
+    data.AuthorGiven should equal("")
   }
-  @Test
-  def test_AuthorFamily() {  
-    assertEquals("", data.AuthorFamily)
+
+  @Test def AuthorFamily_should_be_parsed_in = {
+    data.AuthorFamily should equal("")
   }
-  @Test
-  def test_EffectiveTimeValue() {  
-    assertEquals("20130805000905", data.EffectiveTimeValue)
+
+  @Test def EffectiveTimeValue_should_be_parsed_in = {
+    data.EffectiveTimeValue should equal("20130805000905")
   }
-  @Test
-  def test_RecipientFamily() {  
-    assertEquals("", data.RecipientFamily)
+
+  @Test def RecipientFamily_should_be_parsed_in = {
+    data.RecipientFamily should equal("")
   }
-  @Test
-  def test_RecipientGiven() {  
-    assertEquals("G8630894", data.RecipientGiven)
+
+  @Test def RecipientGiven_should_be_parsed_in = {
+    data.RecipientGiven should equal("G8630894")
   }
-  @Test
-  def test_ReceivedOrgainisationName() {  
-    assertEquals("", data.ReceivedOrgainisationName)
+
+  @Test def ReceivedOrgainisationName_should_be_parsed_in = {
+    data.ReceivedOrgainisationName should equal("")
   }
-  @Test
-  def test_OrganisationName() {  
-    assertEquals("KINGS COLLEGE HOSPITAL", data.OrganisationName)
+
+  @Test def OrganisationName_should_be_parsed_in = {
+    data.OrganisationName should equal("KINGS COLLEGE HOSPITAL")
   }
 }

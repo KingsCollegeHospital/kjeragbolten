@@ -25,7 +25,7 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.InternetHeaders.InternetHeader
 import javax.mail.Header
 import javax.mail.internet.MimeMultipart
-import uk.kch.nhs.geneva.kjeragbolten.route.MailExchangeProcessor
+import uk.kch.nhs.geneva.kjeragbolten.processor.MailExchangeProcessor
 import javax.mail.Address
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.io.IOUtils
