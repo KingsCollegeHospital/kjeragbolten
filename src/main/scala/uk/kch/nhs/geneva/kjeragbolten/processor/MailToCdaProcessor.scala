@@ -4,6 +4,7 @@ import org.apache.camel.Processor
 import org.apache.camel.Exchange
 import uk.kch.nhs.geneva.kjeragbolten.CcdDocumentData
 import java.text.SimpleDateFormat
+import org.apache.commons.lang.StringUtils
 
 class MailToCdaProcessor extends Processor {
 
@@ -57,7 +58,7 @@ class MailToCdaProcessor extends Processor {
   def parserEprIdentSegment(value: String): CcdDocumentData = {
     val cleaned = value.replaceAll("<IDENT>", "").replaceAll("</IDENT>", "").split("\\|")
     val default = getEmptyDemoMap
-    default.Destination = cleaned(0)
+    default.Destination = if (StringUtils.isEmpty(cleaned(0))) "9999999999" else cleaned(0)
     default.PatientFamily = cleaned(1)
     default.PatientGiven = cleaned(2)
     default.PatientRoleId = cleaned(4)
