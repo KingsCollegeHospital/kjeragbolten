@@ -31,8 +31,8 @@ import org.scalatest.junit.JUnitSuite
 import org.scalatest.junit.ShouldMatchersForJUnit
 import org.junit.Test
 
-class ParserTest extends JUnitSuite with ShouldMatchersForJUnit {
-  val identValue = "<IDENT>G85001|Cather|Peter|D446358|4961016322|24-Jul-1924|KINGS COLLEGE HOSPITAL|||A&E GP Letter|986867886||05/08/2013 00:09:05|G8630894||</IDENT>"
+class ViewPointParserTest extends JUnitSuite with ShouldMatchersForJUnit {
+  val identValue = "|Levin|Andrea|V286562||29/08/1985|KINGS COLLEGE HOSPITAL|ViewPoint|26/07/2013||332013|Dr Chorouk Kohler-Boureq, visiting doctor|26/07/2013|G2648532G85644|Department of Womens Health|Early Pregnancy Unit "
   val parser = new MailToCdaProcessor
   val data = parser.parserEprIdentSegment(identValue)
 
