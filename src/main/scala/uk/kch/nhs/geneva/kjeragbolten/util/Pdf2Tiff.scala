@@ -31,12 +31,13 @@ object Pdf2Tiff {
 	@throws (classOf[IOException])
 	@throws (classOf[InterruptedException])
 	@throws (classOf[IM4JavaException]) 
-	def  convertPdf2Tiff( fis : InputStream) : InputStream =			{
+	def convertPdf2Tiff(fis : InputStream) : InputStream = {
 
 		val tiffFile = File.createTempFile("output", ".tiff");
 		logger.info("Generating tiff file:" + tiffFile.getPath());
 
 		val op = new IMOperation();
+		op.density(100);
 		op.addImage("-"); // read from stdin
 		op.trim(); // trim transparent edges
 		// op.background("white"); // some viewers have a default white background
