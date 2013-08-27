@@ -10,8 +10,8 @@
 	<packaging>bundle</packaging>
 
 	<properties>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 		<scala.tools.version>2.9.3</scala.tools.version>
 		<scala.version>2.9.3</scala.version>
@@ -425,4 +425,17 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>openhealth</id>
+			<name>openhealth</name>
+			<url>http://repo.openehealth.org/maven2/releases</url>
+		</repository>
+		<repository>
+			<id>maven</id>
+			<name>maven</name>
+			<url>http://repo1.maven.org/maven2/</url>
+		</repository>
+	</repositories>
 </project>
