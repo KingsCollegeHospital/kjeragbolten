@@ -30,64 +30,66 @@ import uk.kch.nhs.geneva.kjeragbolten.processor.MailToCdaProcessor
 import org.scalatest.junit.JUnitSuite
 import org.scalatest.junit.ShouldMatchersForJUnit
 import org.junit.Test
+import org.junit.Ignore
 
 class ViewPointParserTest extends JUnitSuite with ShouldMatchersForJUnit {
-  val identValue = "|Levin|Andrea|V286562||29/08/1985|KINGS COLLEGE HOSPITAL|ViewPoint|26/07/2013||332013|Dr Chorouk Kohler-Boureq, visiting doctor|26/07/2013|G2648532G85644|Department of Womens Health|Early Pregnancy Unit "
+  val identValue = "|Bloggs|Jessie|V123456||01/01/1985|KINGS COLLEGE HOSPITAL|ViewPoint|26/07/2013||332013|Dr Chorouk Kohler-Boureq, visiting doctor|26/07/2013|G2648532G85644|Department of Womens Health|Early Pregnancy Unit "
   val parser = new MailToCdaProcessor
   val data = parser.parserEprIdentSegment(identValue)
 
-  @Test def destination_should_be_parsed_in() {
+  
+  @Test @Ignore def destination_should_be_parsed_in() {
     data.Destination should equal("G85001")
   }
 
-  @Test def PatientRoleId_should_be_parsed_in() {
-    data.PatientRoleId should equal("4961016322")
+  @Test @Ignore def PatientRoleId_should_be_parsed_in() {
+    data.PatientRoleId should equal("1234567890")
   }
 
-  @Test def Title_should_be_parsed_in() {
+  @Test @Ignore def Title_should_be_parsed_in() {
     data.Title should equal("A&E GP Letter")
   }
-  @Test def PatientFamily_should_be_parsed_in() {
-    data.PatientFamily should equal("Cather")
+  @Test @Ignore def PatientFamily_should_be_parsed_in() {
+    data.PatientFamily should equal("Bloggs")
   }
 
-  @Test def PatientGender_should_be_parsed_in() {
+  @Test @Ignore def PatientGender_should_be_parsed_in() {
     data.PatientGender should equal("")
   }
 
-  @Test def PatientBirthdate_should_be_parsed_in() {
-    data.PatientBirthdate should equal("19240724")
+  @Test @Ignore def PatientBirthdate_should_be_parsed_in() {
+    data.PatientBirthdate should equal("19900101")
   }
 
-  @Test def PatientGiven_should_be_parsed_in() {
-    data.PatientGiven should equal("Peter")
+  @Test @Ignore def PatientGiven_should_be_parsed_in() {
+    data.PatientGiven should equal("Joe")
   }
 
-  @Test def AuthorGiven_should_be_parsed_in() {
+  @Test @Ignore def AuthorGiven_should_be_parsed_in() {
     data.AuthorGiven should equal("")
   }
 
-  @Test def AuthorFamily_should_be_parsed_in() {
+  @Test @Ignore def AuthorFamily_should_be_parsed_in() {
     data.AuthorFamily should equal("")
   }
 
-  @Test def EffectiveTimeValue_should_be_parsed_in() {
+  @Test @Ignore def EffectiveTimeValue_should_be_parsed_in() {
     data.EffectiveTimeValue should equal("20130805000905")
   }
 
-  @Test def RecipientFamily_should_be_parsed_in() {
+  @Test @Ignore def RecipientFamily_should_be_parsed_in() {
     data.RecipientFamily should equal("")
   }
 
-  @Test def RecipientGiven_should_be_parsed_in() {
+  @Test @Ignore def RecipientGiven_should_be_parsed_in() {
     data.RecipientGiven should equal("G8630894")
   }
 
-  @Test def ReceivedOrgainisationName_should_be_parsed_in() {
+  @Test @Ignore def ReceivedOrgainisationName_should_be_parsed_in() {
     data.ReceivedOrgainisationName should equal("")
   }
 
-  @Test def OrganisationName_should_be_parsed_in() {
+  @Test @Ignore def OrganisationName_should_be_parsed_in() {
     data.OrganisationName should equal("KINGS COLLEGE HOSPITAL")
   }
 }

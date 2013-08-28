@@ -32,7 +32,7 @@ import org.scalatest.junit.ShouldMatchersForJUnit
 import org.junit.Test
 
 class ParserTest extends JUnitSuite with ShouldMatchersForJUnit {
-  val identValue = "<IDENT>G85001|Cather|Peter|D446358|4961016322|24-Jul-1924|KINGS COLLEGE HOSPITAL|||A&E GP Letter|986867886||05/08/2013 00:09:05|G8630894||</IDENT>"
+  val identValue = "<IDENT>G85001|Bloggs|Joe|P123456|1234567890|01-Jan-1990|KINGS COLLEGE HOSPITAL|||A&E GP Letter|986867886||05/08/2013 00:09:05|G8630894||</IDENT>"
   val parser = new MailToCdaProcessor
   val data = parser.parserEprIdentSegment(identValue)
 
@@ -41,14 +41,14 @@ class ParserTest extends JUnitSuite with ShouldMatchersForJUnit {
   }
 
   @Test def PatientRoleId_should_be_parsed_in() {
-    data.PatientRoleId should equal("4961016322")
+    data.PatientRoleId should equal("1234567890")
   }
 
   @Test def Title_should_be_parsed_in() {
     data.Title should equal("A&E GP Letter")
   }
   @Test def PatientFamily_should_be_parsed_in() {
-    data.PatientFamily should equal("Cather")
+    data.PatientFamily should equal("Bloggs")
   }
 
   @Test def PatientGender_should_be_parsed_in() {
@@ -56,11 +56,11 @@ class ParserTest extends JUnitSuite with ShouldMatchersForJUnit {
   }
 
   @Test def PatientBirthdate_should_be_parsed_in() {
-    data.PatientBirthdate should equal("19240724")
+    data.PatientBirthdate should equal("19900101")
   }
 
   @Test def PatientGiven_should_be_parsed_in() {
-    data.PatientGiven should equal("Peter")
+    data.PatientGiven should equal("Joe")
   }
 
   @Test def AuthorGiven_should_be_parsed_in() {
