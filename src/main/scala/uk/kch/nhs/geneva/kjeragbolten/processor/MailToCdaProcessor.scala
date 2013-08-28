@@ -58,10 +58,10 @@ class MailToCdaProcessor extends Processor {
   def parserEprIdentSegment(value: String): CcdDocumentData = {
     val cleaned = value.replaceAll("<IDENT>", "").replaceAll("</IDENT>", "").split("\\|")
     val default = getEmptyDemoMap
-    default.Destination = if (StringUtils.isEmpty(cleaned(0))) "9999999999" else cleaned(0)
+    default.Destination = cleaned(0)
     default.PatientFamily = cleaned(1)
     default.PatientGiven = cleaned(2)
-    default.PatientRoleId = cleaned(4)
+    default.PatientRoleId = if (StringUtils.isEmpty(cleaned(4))) "9999999999" else cleaned(4)
     val dateofBirth = cleaned(5)
     if (dateofBirth.indexOf("-") > -1)
       default.PatientBirthdate = convetRfc1123DtmToHl7(dateofBirth)
