@@ -14,6 +14,8 @@ import java.util.UUID;
 
 import javax.activation.DataHandler;
 
+import java.net.URLConnection
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -90,11 +92,15 @@ class CcdDocumentDataProcessor extends Processor {
       val inputAttachment = attachment.getValue().getDataSource()
         .getInputStream();
 
+      val attachmentName = attachment.getKey();
+
       val outputAttachment = Pdf2Tiff
-        .convertPdf2Tiff(inputAttachment);
+        .convertPdf2Tiff(inputAttachment, attachmentName);
+      val outputAttachmentName = attachmentName.split("\\.")(0) + ".tiff"
+
       val continuityOfCareDocument = this
         .generateContinuityOfCareDocument(ccdDocumentData,
-          outputAttachment);
+          outputAttachmentName, outputAttachment);
 
       val document = this
         .renderContinuityOfCareDocument(continuityOfCareDocument);
@@ -106,7 +112,6 @@ class CcdDocumentDataProcessor extends Processor {
           "urn:nhs-uk:identity:tactix4");
 
       exchange.getOut().setBody(d);
-      // CDA only supports one document/attachment
       outputAttachment.close();
       inputAttachment.close();
     }
@@ -122,17 +127,10 @@ class CcdDocumentDataProcessor extends Processor {
 
   @throws(classOf[IOException])
   private def generateContinuityOfCareDocument(
-    data: CcdDocumentData, attachment: InputStream): ContinuityOfCareDocument = {
-    val patientRoleIdRoot = data.PatientRoleIdRoot;
-    val patientRoleId = data.PatientRoleId;
-    val patientGiven = data.PatientGiven;
-    val patientFamily = data.PatientFamily;
-    val patientGenderCode = data.PatientGender;
-    val patientGenderCodeSystem = data.AdministrativeGenderCode;
-    val patientBirthdate = data.PatientBirthdate;
-    val patientRole = createPatientRole(patientRoleIdRoot,
-      patientRoleId, patientGiven, patientFamily, patientGenderCode,
-      patientGenderCodeSystem, patientBirthdate);
+    data: CcdDocumentData, attachmentName: String, attachment: InputStream): ContinuityOfCareDocument = {
+    val patientRole = createPatientRole(data.PatientRoleIdRoot,
+      data.PatientRoleId, data.PatientGiven, data.PatientFamily, data.PatientGender,
+      data.AdministrativeGenderCode, data.PatientBirthdate);
 
     val effectiveTimeValue = data.EffectiveTimeValue;
 
@@ -142,33 +140,23 @@ class CcdDocumentDataProcessor extends Processor {
     val documentEffectiveDate = CdaBuilderFactory
       .createTs(effectiveTimeValue);
 
-    val authorGiven = data.AuthorGiven;
-    val authorFamily = data.AuthorFamily;
-    val author = createAuthor(authorGiven, authorFamily,
+    val author = createAuthor(data.AuthorGiven, data.AuthorFamily,
       authorDocumentEffectiveDate);
 
-    val recipientFamily = data.RecipientFamily;
-    val recipientGiven = data.RecipientGiven;
-    val receivedOrgainisationName = data.ReceivedOrgainisationName;
-    val recipient = createRecipient(recipientFamily,
-      recipientGiven, receivedOrgainisationName);
+    val recipient = createRecipient(data.RecipientFamily,
+      data.RecipientGiven, data.ReceivedOrgainisationName);
 
-    val organisationName = data.OrganisationName;
-    val infrastructureRootId = data.InfrastructureRootId;
-    val custodian = createCustodian(organisationName,
-      infrastructureRootId);
+    val custodian = createCustodian(data.OrganisationName,
+      data.InfrastructureRootId);
 
     // Add attachment
 
-    val mediaType = "image/tiff";
+    val mediaType = getMediaType(attachmentName);
     val component = createComponent(mediaType, attachment);
 
-    val title = data.Title;
-    val documentTitle = CdaBuilderFactory.createSt(title);
+    val documentTitle = CdaBuilderFactory.createSt(data.Title);
 
-    val root = data.Root;
-    val extension = data.Extension;
-    val docId = CdaBuilderFactory.createIi(root, extension);
+    val docId = CdaBuilderFactory.createIi(data.Root, data.Extension);
 
     val ccdDocument = CdaBuilderFactory
       .createContinuityOfCareDocument(documentTitle,
@@ -177,6 +165,10 @@ class CcdDocumentDataProcessor extends Processor {
     ccdDocument.setComponent(component);
 
     return ccdDocument;
+  }
+
+  def getMediaType(attachmentName: String): String = {
+    URLConnection.guessContentTypeFromName(attachmentName)
   }
 
   @throws(classOf[IOException])

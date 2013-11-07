@@ -10,7 +10,9 @@ class MailToCdaProcessor extends Processor {
 
   def process(exchange: Exchange): Unit = {
     val previousBody = exchange.getIn().getBody(classOf[String])
-    exchange.getIn().setBody(parserEprIdentSegment(previousBody))
+    val ccdData = parserEprIdentSegment(previousBody)
+    //ccdData.Destination = "K00000" // force destination during test
+    exchange.getIn().setBody(ccdData)
   }
 
   def getDemoMap(): CcdDocumentData = {
